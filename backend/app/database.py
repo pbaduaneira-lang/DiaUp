@@ -3,7 +3,10 @@ import psycopg2.extras
 import os
 
 def get_database_url():
-    return os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/DiaUp")
+    url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/DiaUp")
+    if "$bhQ3TCEaU&kuG5" in url:
+        url = url.replace("$bhQ3TCEaU&kuG5", "%24bhQ3TCEaU%26kuG5")
+    return url
 
 _schema_ensured = False
 

@@ -101,7 +101,7 @@ def add_message():
         return jsonify({"message": "Mensagem adicionada com sucesso.", "item": row_to_message(cursor.fetchone())}), 201
     except Exception as e:
         print(f"[Admin Error] Erro ao salvar mensagem no PostgreSQL: {e}")
-        return jsonify({"error": "Falha de conexão com o banco na nuvem. Verifique se a variável DATABASE_URL na Vercel está com a URL do Connection Pooler (IPv4) do Supabase."}), 503
+        return jsonify({"error": f"Erro do PostgreSQL: {e}. Verifique se a variável DATABASE_URL na Vercel está configurada com a URI do Connection Pooler (IPv4) e a senha codificada."}), 503
 
 
 @app.route("/admin/messages", methods=["GET"])
@@ -147,7 +147,7 @@ def delete_message(message_id):
         return jsonify({"message": "Mensagem removida."})
     except Exception as e:
         print(f"[Admin Error] Erro ao deletar mensagem: {e}")
-        return jsonify({"error": "Erro ao conectar com o banco na nuvem."}), 503
+        return jsonify({"error": f"Erro PostgreSQL ({e}) ao deletar."}), 503
 
 
 @app.route("/admin/messages/<int:message_id>", methods=["PUT"])
@@ -176,7 +176,7 @@ def update_message(message_id):
         return jsonify({"message": "Mensagem atualizada com sucesso.", "item": row_to_message(cursor.fetchone())}), 200
     except Exception as e:
         print(f"[Admin Error] Erro ao atualizar mensagem: {e}")
-        return jsonify({"error": "Erro de conexão com o banco na nuvem."}), 503
+        return jsonify({"error": f"Erro PostgreSQL ({e}) ao atualizar."}), 503
 
 
 @app.route("/user/profile", methods=["GET"])
