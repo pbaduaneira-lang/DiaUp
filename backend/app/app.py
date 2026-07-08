@@ -377,18 +377,33 @@ def get_admin_stats():
         row_dl = cursor.fetchone()
         downloads = row_dl["value"] if row_dl else 0
         
-        cursor.execute("SELECT COUNT(*) AS total FROM user_profile WHERE name != 'Viajante' AND name != ''")
-        row_reg = cursor.fetchone()
-        registered = row_reg["total"] if row_reg else 0
+        cursor.execute("SELECT name, birth_date, city, state FROM user_profile WHERE name != 'Viajante' AND name != ''")
+        users_up = [dict(r) for r in cursor.fetchall()]
         
-        cursor.execute("SELECT name, birth_date, city, state FROM user_profile WHERE name != 'Viajante' AND name != '' ORDER BY id DESC LIMIT 10")
-        for row in cursor.fetchall():
-            item = dict(row)
-            if hasattr(item.get("birth_date"), "isoformat"):
-                item["birth_date"] = item["birth_date"].isoformat()
-            else:
-                item["birth_date"] = str(item.get("birth_date") or "")
-            recent_users.append(item)
+        users_us = []
+        try:
+            cursor.execute("SELECT nome AS name, data_nascimento AS birth_date, cidade AS city, estado AS state FROM usuarios WHERE nome != 'Viajante' AND nome != '' AND nome IS NOT NULL")
+            users_us = [dict(r) for r in cursor.fetchall()]
+        except Exception as ex:
+            print(f"[Admin Stats Warning] Erro ao buscar da tabela usuarios: {ex}")
+            
+        all_users = []
+        seen = set()
+        for u in users_up + users_us:
+            name_clean = (u.get("name") or "").strip()
+            if not name_clean or name_clean.lower() == "viajante":
+                continue
+            key = (name_clean.lower(), str(u.get("birth_date") or "").strip())
+            if key not in seen:
+                seen.add(key)
+                if hasattr(u.get("birth_date"), "isoformat"):
+                    u["birth_date"] = u["birth_date"].isoformat()
+                else:
+                    u["birth_date"] = str(u.get("birth_date") or "")
+                all_users.append(u)
+                
+        registered = len(all_users)
+        recent_users = all_users[:20]
     except Exception as e:
         print(f"[Admin Error] get_admin_stats falhou: {e}")
         

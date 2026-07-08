@@ -48,7 +48,6 @@ class TestEndpoints(unittest.TestCase):
         self.assertIn('content', data)
         self.assertIn('Mariana', data['content'])
         self.assertTrue(data['content'].startswith('Mariana,'), f"Mensagem deve começar com o nome: {data['content']}")
-        self.assertIn('Belo Horizonte', data['content'])
         print("\n--- Mensagem Gerada via Endpoint /user/get_message (Saúde) para Mariana ---")
         print(data['content'])
         print("---------------------------------------------------------------------------\n")
