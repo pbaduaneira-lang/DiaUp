@@ -87,36 +87,43 @@ def add_message():
     if len(content) < 8:
         return jsonify({"error": "Escreva uma mensagem com pelo menos 8 caracteres."}), 400
 
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute(
-        "INSERT INTO messages (content, category) VALUES (%s, %s) RETURNING id",
-        (content, category),
-    )
-    message_id = cursor.fetchone()["id"]
-    db.commit()
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "INSERT INTO messages (content, category) VALUES (%s, %s) RETURNING id",
+            (content, category),
+        )
+        message_id = cursor.fetchone()["id"]
+        db.commit()
 
-    cursor.execute("SELECT id, content, category, created_at FROM messages WHERE id = %s", (message_id,))
-    return jsonify({"message": "Mensagem adicionada com sucesso.", "item": row_to_message(cursor.fetchone())}), 201
+        cursor.execute("SELECT id, content, category, created_at FROM messages WHERE id = %s", (message_id,))
+        return jsonify({"message": "Mensagem adicionada com sucesso.", "item": row_to_message(cursor.fetchone())}), 201
+    except Exception as e:
+        print(f"[Admin Error] Erro ao salvar mensagem no PostgreSQL: {e}")
+        return jsonify({"error": "Falha de conexão com o banco na nuvem. Verifique se a variável DATABASE_URL na Vercel está com a URL do Connection Pooler (IPv4) do Supabase."}), 503
 
 
 @app.route("/admin/messages", methods=["GET"])
 @admin_required
 def list_messages():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute(
-        """
-        SELECT id, content, category, created_at
-        FROM messages
-        ORDER BY created_at DESC, id DESC
-        """
-    )
-    messages = [row_to_message(row) for row in cursor.fetchall()]
-
+    messages = []
     categories = {}
-    for item in messages:
-        categories[item["category"]] = categories.get(item["category"], 0) + 1
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT id, content, category, created_at
+            FROM messages
+            ORDER BY created_at DESC, id DESC
+            """
+        )
+        messages = [row_to_message(row) for row in cursor.fetchall()]
+        for item in messages:
+            categories[item["category"]] = categories.get(item["category"], 0) + 1
+    except Exception as e:
+        print(f"[Admin Error] Erro ao listar mensagens do PostgreSQL: {e}")
 
     return jsonify({
         "messages": messages,
@@ -128,15 +135,19 @@ def list_messages():
 @app.route("/admin/messages/<int:message_id>", methods=["DELETE"])
 @admin_required
 def delete_message(message_id):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM messages WHERE id = %s", (message_id,))
-    db.commit()
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM messages WHERE id = %s", (message_id,))
+        db.commit()
 
-    if cursor.rowcount == 0:
-        return jsonify({"error": "Mensagem nao encontrada."}), 404
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Mensagem nao encontrada."}), 404
 
-    return jsonify({"message": "Mensagem removida."})
+        return jsonify({"message": "Mensagem removida."})
+    except Exception as e:
+        print(f"[Admin Error] Erro ao deletar mensagem: {e}")
+        return jsonify({"error": "Erro ao conectar com o banco na nuvem."}), 503
 
 
 @app.route("/admin/messages/<int:message_id>", methods=["PUT"])
@@ -149,19 +160,23 @@ def update_message(message_id):
     if len(content) < 8:
         return jsonify({"error": "Escreva uma mensagem com pelo menos 8 caracteres."}), 400
 
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute(
-        "UPDATE messages SET content = %s, category = %s WHERE id = %s",
-        (content, category, message_id),
-    )
-    db.commit()
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            "UPDATE messages SET content = %s, category = %s WHERE id = %s",
+            (content, category, message_id),
+        )
+        db.commit()
 
-    if cursor.rowcount == 0:
-        return jsonify({"error": "Mensagem não encontrada."}), 404
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Mensagem não encontrada."}), 404
 
-    cursor.execute("SELECT id, content, category, created_at FROM messages WHERE id = %s", (message_id,))
-    return jsonify({"message": "Mensagem atualizada com sucesso.", "item": row_to_message(cursor.fetchone())}), 200
+        cursor.execute("SELECT id, content, category, created_at FROM messages WHERE id = %s", (message_id,))
+        return jsonify({"message": "Mensagem atualizada com sucesso.", "item": row_to_message(cursor.fetchone())}), 200
+    except Exception as e:
+        print(f"[Admin Error] Erro ao atualizar mensagem: {e}")
+        return jsonify({"error": "Erro de conexão com o banco na nuvem."}), 503
 
 
 @app.route("/user/profile", methods=["GET"])
@@ -333,42 +348,50 @@ def get_categories():
 
 @app.route("/api/stats/download", methods=["POST"])
 def track_download():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute(
-        """
-        INSERT INTO app_stats (metric, value) VALUES ('downloads', 1)
-        ON CONFLICT(metric) DO UPDATE SET value = app_stats.value + 1
-        """
-    )
-    db.commit()
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            INSERT INTO app_stats (metric, value) VALUES ('downloads', 1)
+            ON CONFLICT(metric) DO UPDATE SET value = app_stats.value + 1
+            """
+        )
+        db.commit()
+    except Exception as e:
+        print(f"[Stats Warning] track_download: {e}")
     return jsonify({"status": "success"}), 200
 
 
 @app.route("/admin/stats", methods=["GET"])
 @admin_required
 def get_admin_stats():
-    db = get_db()
-    cursor = db.cursor()
-    
-    cursor.execute("SELECT value FROM app_stats WHERE metric = 'downloads'")
-    row_dl = cursor.fetchone()
-    downloads = row_dl["value"] if row_dl else 0
-    
-    cursor.execute("SELECT COUNT(*) AS total FROM user_profile WHERE name != 'Viajante'")
-    row_reg = cursor.fetchone()
-    registered = row_reg["total"] if row_reg else 0
-    
-    cursor.execute("SELECT name, birth_date, city, state FROM user_profile WHERE name != 'Viajante' ORDER BY id DESC LIMIT 10")
+    downloads = 0
+    registered = 0
     recent_users = []
-    for row in cursor.fetchall():
-        item = dict(row)
-        if hasattr(item.get("birth_date"), "isoformat"):
-            item["birth_date"] = item["birth_date"].isoformat()
-        else:
-            item["birth_date"] = str(item.get("birth_date") or "")
-        recent_users.append(item)
-    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        
+        cursor.execute("SELECT value FROM app_stats WHERE metric = 'downloads'")
+        row_dl = cursor.fetchone()
+        downloads = row_dl["value"] if row_dl else 0
+        
+        cursor.execute("SELECT COUNT(*) AS total FROM user_profile WHERE name != 'Viajante' AND name != ''")
+        row_reg = cursor.fetchone()
+        registered = row_reg["total"] if row_reg else 0
+        
+        cursor.execute("SELECT name, birth_date, city, state FROM user_profile WHERE name != 'Viajante' AND name != '' ORDER BY id DESC LIMIT 10")
+        for row in cursor.fetchall():
+            item = dict(row)
+            if hasattr(item.get("birth_date"), "isoformat"):
+                item["birth_date"] = item["birth_date"].isoformat()
+            else:
+                item["birth_date"] = str(item.get("birth_date") or "")
+            recent_users.append(item)
+    except Exception as e:
+        print(f"[Admin Error] get_admin_stats falhou: {e}")
+        
     return jsonify({
         "downloads": downloads,
         "registered": registered,
