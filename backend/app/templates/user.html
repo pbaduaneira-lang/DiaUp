@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500..700;1,500..700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/user.css">
+</head>
+<body>
+    <main class="app-shell">
+        <nav class="topbar" aria-label="Navegacao principal">
+            <a class="brand" href="/" aria-label="DiaUp inicio">
+                <div class="brand-logo-container">
+                    <svg class="sun-icon" width="120" height="120" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sunGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FFEA68" />
+                                <stop offset="50%" stop-color="#FF9800" />
+                                <stop offset="100%" stop-color="#FF5E36" />
+                            </linearGradient>
+                            <filter id="sunGlow" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur stdDeviation="4.5" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <g filter="url(#sunGlow)">
+                            <path d="M30 4 V12 M30 48 V56 M4 30 H12 M48 30 H56 M11.6 11.6 L17.3 17.3 M42.7 42.7 L48.4 48.4 M11.6 48.4 L17.3 42.7 M42.7 17.3 L48.4 11.6" stroke="url(#sunGrad)" stroke-width="3.8" stroke-linecap="round"/>
+                            <path d="M17.5 8 L20.5 14 M39.5 46 L42.5 52 M8 42.5 L14 39.5 M46 20.5 L52 17.5 M8 17.5 L14 20.5 M46 39.5 L52 42.5 M17.5 52 L20.5 46 M39.5 14 L42.5 8" stroke="url(#sunGrad)" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
+                            <circle cx="30" cy="30" r="14" fill="url(#sunGrad)" />
+                            <circle cx="25" cy="25" r="5.5" fill="#FFF9E6" opacity="0.55" />
+                        </g>
+                    </svg>
+                </div>
+                <span class="brand-text">Dia<span class="brand-highlight">Up</span></span>
+            </a>
+            <div class="nav-links">
+                <button id="openProfileBtn" class="profile-button" type="button">Meu Perfil</button>
+                <a class="admin-link" href="/admin">Admin</a>
+            </div>
+        </nav>
+
+        <section class="hero" aria-labelledby="pageTitle">
+            <div class="hero-copy">
+                <p class="eyebrow">Foco para o seu dia</p>
+                <h1 id="pageTitle">Uma mensagem curta para reacender sua energia.</h1>
+                <p class="lead">Escolha uma categoria ou deixe o app surpreender voce com uma frase motivacional.</p>
+            </div>
+
+            <section class="message-panel" aria-live="polite">
+                <div class="panel-head">
+                    <span id="messageCategory" class="category-pill">Pronto</span>
+                    <div class="auto-renew-wrapper">
+                        <div class="auto-renew-control" title="Configurar renovação automática da mensagem">
+                            <span class="renew-icon">⏳</span>
+                            <span id="renewCountdown" class="renew-text">3:00</span>
+                            <select id="autoRenewSelect" class="renew-select" aria-label="Tempo de renovação">
+                                <option value="60">1 min</option>
+                                <option value="180" selected>3 min</option>
+                                <option value="300">5 min</option>
+                                <option value="600">10 min</option>
+                                <option value="0">Pausar</option>
+                            </select>
+                        </div>
+                        <span id="messageDate" class="date-label">Agora</span>
+                    </div>
+                </div>
+
+                <blockquote id="messageContent">Toque no botao abaixo para receber sua primeira mensagem.</blockquote>
+
+                <div class="category-row" id="categoryFilters" aria-label="Categorias"></div>
+
+                <div class="actions">
+                    <button id="getMessageBtn" class="primary-button" type="button">Nova mensagem</button>
+                    <button id="btn-listen" class="ghost-button btn-audio" type="button">🔊 Ouvir Mensagem</button>
+                    <button id="copyMessageBtn" class="ghost-button" type="button">Copiar</button>
+                </div>
+            </section>
+        </section>
+
+        <section class="history-strip" aria-label="Ultimas mensagens vistas">
+            <div>
+                <p class="section-kicker">Historico rapido</p>
+                <h2>Mensagens que passaram por aqui</h2>
+            </div>
+            <div id="messageHistory" class="history-list">
+                <p class="empty-history">As mensagens recebidas nesta sessao aparecem aqui.</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="profileModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-panel" role="dialog" aria-labelledby="modalTitle">
+            <div class="modal-head">
+                <div>
+                    <p class="section-kicker">Inteligência Emocional</p>
+                    <h2 id="modalTitle">Seu Perfil no DiaUp</h2>
+                </div>
+                <button id="closeProfileBtn" class="close-button" type="button" aria-label="Fechar">&times;</button>
+            </div>
+            <p class="modal-desc">Esses dados moldam o tom, a maturidade e a empatia geográfica das mensagens geradas pela IA para você.</p>
+            
+            <form id="profileForm" class="profile-form">
+                <label for="profileName">Seu Nome</label>
+                <input type="text" id="profileName" placeholder="Ex: Carlos, Ana" required>
+
+                <label for="profileBirth">Data de Nascimento (ou Ano)</label>
+                <input type="text" id="profileBirth" placeholder="Ex: 1995-06-15 ou 1995" required>
+
+                <div class="form-row">
+                    <div>
+                        <label for="profileCity">Cidade</label>
+                        <input type="text" id="profileCity" placeholder="Ex: São Paulo" required>
+                    </div>
+                    <div>
+                        <label for="profileState">Estado (UF)</label>
+                        <input type="text" id="profileState" placeholder="Ex: SP" maxlength="2" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-button">Salvar e Personalizar</button>
+                <p id="profileStatus" class="status-msg" role="status"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/user.js"></script>
+</body>
+</html>

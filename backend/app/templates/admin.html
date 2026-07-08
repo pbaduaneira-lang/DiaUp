@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500..700;1,500..700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+    <main class="admin-shell">
+        <nav class="topbar" aria-label="Navegacao principal">
+            <a class="brand" href="/">
+                <div class="brand-logo-container">
+                    <svg class="sun-icon" width="120" height="120" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sunGradAdmin" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FFEA68" />
+                                <stop offset="50%" stop-color="#FF9800" />
+                                <stop offset="100%" stop-color="#FF5E36" />
+                            </linearGradient>
+                            <filter id="sunGlowAdmin" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur stdDeviation="4.5" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <g filter="url(#sunGlowAdmin)">
+                            <path d="M30 4 V12 M30 48 V56 M4 30 H12 M48 30 H56 M11.6 11.6 L17.3 17.3 M42.7 42.7 L48.4 48.4 M11.6 48.4 L17.3 42.7 M42.7 17.3 L48.4 11.6" stroke="url(#sunGradAdmin)" stroke-width="3.8" stroke-linecap="round"/>
+                            <path d="M17.5 8 L20.5 14 M39.5 46 L42.5 52 M8 42.5 L14 39.5 M46 20.5 L52 17.5 M8 17.5 L14 20.5 M46 39.5 L52 42.5 M17.5 52 L20.5 46 M39.5 14 L42.5 8" stroke="url(#sunGradAdmin)" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
+                            <circle cx="30" cy="30" r="14" fill="url(#sunGradAdmin)" />
+                            <circle cx="25" cy="25" r="5.5" fill="#FFF9E6" opacity="0.55" />
+                        </g>
+                    </svg>
+                </div>
+                <span class="brand-text">Dia<span class="brand-highlight">Up</span> <span class="brand-badge">Admin</span></span>
+            </a>
+            <div class="nav-actions">
+                <button id="openStatsBtn" class="stats-btn" type="button">📊 Relatório de Downloads & Cadastros</button>
+                <a class="preview-link" href="/">Ver app</a>
+                <button id="logoutBtn" class="logout-btn" type="button">🚪 Sair</button>
+            </div>
+        </nav>
+
+        <header class="admin-header">
+            <div>
+                <p class="eyebrow">Curadoria motivacional</p>
+                <h1>Organize as mensagens que aparecem no app.</h1>
+            </div>
+            <div class="stats-grid" aria-label="Resumo">
+                <div class="stat-card">
+                    <span>Total</span>
+                    <strong id="totalMessages">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Categorias</span>
+                    <strong id="totalCategories">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span>📥 Downloads</span>
+                    <strong id="totalDownloads">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span>👥 Cadastrados</span>
+                    <strong id="totalRegistered">0</strong>
+                </div>
+            </div>
+        </header>
+
+        <section class="workbench">
+            <form id="messageForm" class="editor-panel">
+                <div class="form-head">
+                    <p class="section-kicker">Nova entrada</p>
+                    <h2>Adicionar mensagem</h2>
+                </div>
+
+                <label for="content">Mensagem</label>
+                <textarea id="content" rows="6" minlength="8" placeholder="Escreva uma frase direta, humana e util." required></textarea>
+
+                <label for="category">Categoria</label>
+                <select id="category" required>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Relacionamento">Relacionamento</option>
+                    <option value="Família">Família</option>
+                    <option value="Trabalho">Trabalho</option>
+                    <option value="Projetos">Projetos</option>
+                    <option value="Amor">Amor</option>
+                    <option value="Finanças">Finanças</option>
+                </select>
+
+                <button type="submit">Salvar mensagem</button>
+                <p id="statusMessage" role="status"></p>
+            </form>
+
+            <section class="library-panel" aria-labelledby="libraryTitle">
+                <div class="library-head">
+                    <div>
+                        <p class="section-kicker">Biblioteca</p>
+                        <h2 id="libraryTitle">Mensagens cadastradas</h2>
+                    </div>
+                    <button id="refreshMessages" class="secondary-button" type="button">Atualizar</button>
+                </div>
+
+                <div id="categorySummary" class="category-summary"></div>
+                <div id="messagesList" class="messages-list"></div>
+            </section>
+        </section>
+    </main>
+
+    <div id="statsModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-panel" role="dialog" aria-labelledby="statsTitle">
+            <div class="modal-head">
+                <div>
+                    <p class="section-kicker">Crescimento & Analytics</p>
+                    <h2 id="statsTitle">Downloads e Usuários do DiaUp</h2>
+                </div>
+                <button id="closeStatsBtn" class="close-button" type="button" aria-label="Fechar">&times;</button>
+            </div>
+            <p class="modal-desc">Acompanhe em tempo real as métricas de aquisição e a adesão ao Motor de Inteligência Emocional.</p>
+            
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <span>📥 Downloads / Instalações</span>
+                    <strong id="modalDownloads">0</strong>
+                </div>
+                <div class="analytics-card">
+                    <span>👥 Perfis Cadastrados</span>
+                    <strong id="modalRegistered">0</strong>
+                </div>
+            </div>
+
+            <div class="recent-users-section">
+                <h3>Últimos Usuários Cadastrados</h3>
+                <div id="recentUsersList" class="recent-list">
+                    <p class="empty-msg">Nenhum usuário cadastrado ainda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-panel" role="dialog" aria-labelledby="editTitle">
+            <div class="modal-head">
+                <div>
+                    <p class="section-kicker">Edição de Curadoria</p>
+                    <h2 id="editTitle">Editar Mensagem</h2>
+                </div>
+                <button id="closeEditBtn" class="close-button" type="button" aria-label="Fechar">&times;</button>
+            </div>
+            
+            <form id="editForm" class="editor-panel modal-form">
+                <input type="hidden" id="editMessageId">
+                
+                <label for="editContent">Mensagem</label>
+                <textarea id="editContent" rows="5" minlength="8" required></textarea>
+
+                <label for="editCategory">Categoria</label>
+                <select id="editCategory" required>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Relacionamento">Relacionamento</option>
+                    <option value="Família">Família</option>
+                    <option value="Trabalho">Trabalho</option>
+                    <option value="Projetos">Projetos</option>
+                    <option value="Amor">Amor</option>
+                    <option value="Finanças">Finanças</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="button" id="cancelEditBtn" class="secondary-button">Cancelar</button>
+                    <button type="submit" class="primary-button submit-btn">Salvar Alterações</button>
+                </div>
+                <p id="editStatusMessage" role="status"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/admin.js"></script>
+</body>
+</html>

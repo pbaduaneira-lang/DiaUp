@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaUp Admin — Acesso Restrito</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;850&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin.css">
+    <style>
+        body.login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f6f8fb 0%, #eef2f8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ambient-glow-1 {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 152, 0, 0.15) 0%, rgba(255, 94, 54, 0) 70%);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(27, 127, 99, 0.08) 0%, rgba(27, 127, 99, 0) 70%);
+            bottom: -80px;
+            right: -50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .login-shell {
+            width: min(480px, calc(100% - 32px));
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInCard 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            margin-bottom: 28px;
+        }
+
+        .login-card {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(217, 226, 236, 0.8);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 24px 64px rgba(24, 33, 47, 0.14), 0 4px 16px rgba(24, 33, 47, 0.04);
+        }
+
+        .login-head {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-head .eyebrow {
+            margin: 0 0 6px;
+            color: var(--mint);
+            font-size: 0.8rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .login-head h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--ink);
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .login-head p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin: 8px 0 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin: 0 0 8px;
+            color: #344054;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .form-group input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--ink);
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus {
+            border-color: var(--mint);
+            box-shadow: 0 0 0 4px rgba(27, 127, 99, 0.14);
+        }
+
+        .login-button {
+            width: 100%;
+            min-height: 52px;
+            margin-top: 12px;
+            border: 0;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #FF5E36, #FF9800);
+            color: #ffffff;
+            font-size: 1.05rem;
+            font-weight: 850;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(239, 111, 97, 0.32);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 32px rgba(239, 111, 97, 0.42);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-error {
+            display: none;
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #fff4f2;
+            border: 1px solid #ffd8d2;
+            color: #b9382b;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: center;
+            animation: shakeError 0.4s ease;
+        }
+
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .login-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .login-footer a {
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 560px) {
+            .login-card {
+                padding: 28px 20px;
+            }
+            .login-head h1 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <main class="login-shell">
+        <div class="login-brand">
+            <div class="brand-logo-container">
+                <svg class="sun-icon" width="120" height="120" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="sunGradAdminLogin" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFEA68" />
+                            <stop offset="50%" stop-color="#FF9800" />
+                            <stop offset="100%" stop-color="#FF5E36" />
+                        </linearGradient>
+                        <filter id="sunGlowAdminLogin" x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="4.5" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <g filter="url(#sunGlowAdminLogin)">
+                        <path d="M30 4 V12 M30 48 V56 M4 30 H12 M48 30 H56 M11.6 11.6 L17.3 17.3 M42.7 42.7 L48.4 48.4 M11.6 48.4 L17.3 42.7 M42.7 17.3 L48.4 11.6" stroke="url(#sunGradAdminLogin)" stroke-width="3.8" stroke-linecap="round"/>
+                        <path d="M17.5 8 L20.5 14 M39.5 46 L42.5 52 M8 42.5 L14 39.5 M46 20.5 L52 17.5 M8 17.5 L14 20.5 M46 39.5 L52 42.5 M17.5 52 L20.5 46 M39.5 14 L42.5 8" stroke="url(#sunGradAdminLogin)" stroke-width="2.2" stroke-linecap="round" opacity="0.65"/>
+                        <circle cx="30" cy="30" r="14" fill="url(#sunGradAdminLogin)" />
+                        <circle cx="25" cy="25" r="5.5" fill="#FFF9E6" opacity="0.55" />
+                    </g>
+                </svg>
+            </div>
+            <span class="brand-text">Dia<span class="brand-highlight">Up</span> <span class="brand-badge">Admin</span></span>
+        </div>
+
+        <section class="login-card" aria-labelledby="loginTitle">
+            <div class="login-head">
+                <p class="eyebrow">Acesso Exclusivo</p>
+                <h1 id="loginTitle">Entrar no Painel</h1>
+                <p>Identifique-se com suas credenciais de administrador.</p>
+            </div>
+
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="diaup@gmail.com" required autocomplete="email" autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••••••" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="login-button" id="submitBtn">
+                    <span>Acessar Painel</span>
+                </button>
+
+                <div id="errorMessage" class="login-error" role="alert"></div>
+            </form>
+        </section>
+
+        <footer class="login-footer">
+            <span>Voltar para o <a href="/">aplicativo DiaUp ☀️</a></span>
+        </footer>
+    </main>
+
+    <script>
+        const loginForm = document.getElementById("loginForm");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const submitBtn = document.getElementById("submitBtn");
+        const errorMessage = document.getElementById("errorMessage");
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.style.display = "block";
+            errorMessage.style.animation = "none";
+            // Força reflow para reiniciar animação de shake
+            errorMessage.offsetHeight;
+            errorMessage.style.animation = "shakeError 0.4s ease";
+        }
+
+        function hideError() {
+            errorMessage.style.display = "none";
+        }
+
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            hideError();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                showError("Por favor, preencha o e-mail e a senha.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "<span>Autenticando...</span>";
+
+            try {
+                const response = await fetch("/admin/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Credenciais inválidas.");
+                }
+
+                submitBtn.innerHTML = "<span>✅ Acesso Liberado! Redirecionando...</span>";
+                submitBtn.style.background = "#1b7f63";
+                
+                setTimeout(() => {
+                    window.location.href = data.redirect || "/admin";
+                }, 400);
+            } catch (err) {
+                showError(err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = "<span>Acessar Painel</span>";
+            }
+        });
+    </script>
+</body>
+</html>
