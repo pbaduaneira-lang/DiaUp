@@ -118,12 +118,29 @@ async function loadCategories() {
     try {
         const response = await fetch("/user/categories");
         const data = await response.json();
-        renderCategories(data.categories || []);
-        // Carrega a primeira mensagem automaticamente e inicia a renovação inteligente
+        renderCategories(data.categories || [
+            { name: "Saúde" },
+            { name: "Relacionamento" },
+            { name: "Família" },
+            { name: "Trabalho" },
+            { name: "Projetos" },
+            { name: "Amor" },
+            { name: "Finanças" }
+        ]);
         getMessage();
         startRenewTimer();
     } catch (error) {
-        categoryFilters.innerHTML = "";
+        renderCategories([
+            { name: "Saúde" },
+            { name: "Relacionamento" },
+            { name: "Família" },
+            { name: "Trabalho" },
+            { name: "Projetos" },
+            { name: "Amor" },
+            { name: "Finanças" }
+        ]);
+        getMessage();
+        startRenewTimer();
     }
 }
 
@@ -290,18 +307,28 @@ async function loadProfile() {
         const response = await fetch(`/user/profile?user_id=${encodeURIComponent(userId)}`);
         const data = await response.json();
         if (response.ok) {
-            profileName.value = data.name || "";
-            profileBirth.value = data.birth_date || "";
-            profileCity.value = data.city || "";
-            profileState.value = data.state || "";
-            
-            if (data.name === "Viajante" && !localStorage.getItem("diaup_profile_seen")) {
-                localStorage.setItem("diaup_profile_seen", "true");
-                setTimeout(openModal, 800);
+            if (data.is_new || !data.name || !localStorage.getItem("diaup_profile_saved")) {
+                profileName.value = "";
+                profileBirth.value = "";
+                profileCity.value = "";
+                profileState.value = "";
+                setTimeout(openModal, 400);
+            } else {
+                profileName.value = data.name || "";
+                profileBirth.value = data.birth_date || "";
+                profileCity.value = data.city || "";
+                profileState.value = data.state || "";
             }
         }
     } catch (error) {
         console.error("Erro ao carregar perfil:", error);
+        if (!localStorage.getItem("diaup_profile_saved")) {
+            profileName.value = "";
+            profileBirth.value = "";
+            profileCity.value = "";
+            profileState.value = "";
+            setTimeout(openModal, 400);
+        }
     }
 }
 
@@ -327,6 +354,7 @@ profileForm.addEventListener("submit", async (event) => {
         
         profileStatus.textContent = "✓ Perfil salvo! Gerando nova mensagem...";
         profileStatus.style.color = "#1b7f63";
+        localStorage.setItem("diaup_profile_saved", "true");
         
         setTimeout(() => {
             closeModal();

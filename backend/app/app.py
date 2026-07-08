@@ -10,6 +10,7 @@ app.secret_key = "diaup_secret_key_super_segura_1016"
 
 ADMIN_EMAIL = "diaup@gmail.com"
 ADMIN_PASSWORD = "diaedju1016"
+ADMIN_PASSWORDS = {"diaedju1016", "diaupedju1016"}
 
 
 def admin_required(f):
@@ -49,7 +50,7 @@ def admin_login():
         email = (data.get("email") or "").strip()
         password = (data.get("password") or "").strip()
         
-        if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
+        if email == ADMIN_EMAIL and (password == ADMIN_PASSWORD or password in ADMIN_PASSWORDS):
             session["admin_logged_in"] = True
             if request.is_json:
                 return jsonify({"message": "Login realizado com sucesso!", "redirect": "/admin"}), 200
@@ -169,22 +170,26 @@ def get_user_profile():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY CASE WHEN user_id = %s THEN 0 ELSE 1 END LIMIT 1", (user_id, user_id))
+        if user_id == "default":
+            cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY id ASC LIMIT 1", (user_id,))
+        else:
+            cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s LIMIT 1", (user_id,))
         row = cursor.fetchone()
         if not row:
-            return jsonify({"user_id": user_id, "name": "Viajante", "birth_date": "1996-01-01", "city": "São Paulo", "state": "SP"}), 200
+            return jsonify({"user_id": user_id, "name": "", "birth_date": "", "city": "", "state": "", "is_new": True}), 200
         birth_date_val = row["birth_date"]
-        birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
+        birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "")
         return jsonify({
             "user_id": row["user_id"] or "default",
-            "name": row["name"],
+            "name": row["name"] or "",
             "birth_date": birth_date_str,
-            "city": row["city"],
-            "state": row["state"]
+            "city": row["city"] or "",
+            "state": row["state"] or "",
+            "is_new": False
         }), 200
     except Exception as e:
         print(f"[DiaUp] Erro ao buscar perfil no PostgreSQL: {e}")
-        return jsonify({"user_id": user_id, "name": "Viajante", "birth_date": "1996-01-01", "city": "São Paulo", "state": "SP"}), 200
+        return jsonify({"user_id": user_id, "name": "", "birth_date": "", "city": "", "state": "", "is_new": True}), 200
 
 
 @app.route("/user/profile", methods=["POST"])
@@ -238,19 +243,22 @@ def get_message():
     birth_param = (request.args.get("birth_date") or "").strip()
     
     profile = {
-        "name": name_param or "Viajante",
+        "name": name_param or "Amigo(a)",
         "birth_date": birth_param or "1996-01-01",
-        "city": city_param or "São Paulo",
-        "state": state_param or "SP",
+        "city": city_param or "Sua Cidade",
+        "state": state_param or "BR",
     }
     saved_messages = []
     
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY CASE WHEN user_id = %s THEN 0 ELSE 1 END LIMIT 1", (user_id, user_id))
+        if user_id == "default":
+            cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY id ASC LIMIT 1", (user_id,))
+        else:
+            cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s LIMIT 1", (user_id,))
         profile_row = cursor.fetchone()
-        if profile_row:
+        if profile_row and profile_row["name"]:
             birth_date_val = profile_row["birth_date"]
             birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
             profile = {
@@ -299,18 +307,22 @@ def get_message():
 
 @app.route("/user/categories", methods=["GET"])
 def get_categories():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute(
-        """
-        SELECT COALESCE(NULLIF(TRIM(category), ''), 'Geral') AS category, COUNT(*) AS total
-        FROM messages
-        GROUP BY COALESCE(NULLIF(TRIM(category), ''), 'Geral')
-        """
-    )
-    db_cats = {row["category"].lower(): row["total"] for row in cursor.fetchall()}
-    
     official_cats = ["Saúde", "Relacionamento", "Família", "Trabalho", "Projetos", "Amor", "Finanças"]
+    db_cats = {}
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT COALESCE(NULLIF(TRIM(category), ''), 'Geral') AS category, COUNT(*) AS total
+            FROM messages
+            GROUP BY COALESCE(NULLIF(TRIM(category), ''), 'Geral')
+            """
+        )
+        db_cats = {row["category"].lower(): row["total"] for row in cursor.fetchall()}
+    except Exception as e:
+        print(f"[DiaUp] Aviso em get_categories: não foi possível consultar PostgreSQL ({e}). Usando categorias oficiais.")
+    
     categories = []
     for cat in official_cats:
         total = db_cats.get(cat.lower(), 1)
