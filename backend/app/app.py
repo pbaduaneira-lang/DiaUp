@@ -166,21 +166,25 @@ def update_message(message_id):
 @app.route("/user/profile", methods=["GET"])
 def get_user_profile():
     user_id = (request.args.get("user_id") or "default").strip()
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY CASE WHEN user_id = %s THEN 0 ELSE 1 END LIMIT 1", (user_id, user_id))
-    row = cursor.fetchone()
-    if not row:
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY CASE WHEN user_id = %s THEN 0 ELSE 1 END LIMIT 1", (user_id, user_id))
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"user_id": user_id, "name": "Viajante", "birth_date": "1996-01-01", "city": "São Paulo", "state": "SP"}), 200
+        birth_date_val = row["birth_date"]
+        birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
+        return jsonify({
+            "user_id": row["user_id"] or "default",
+            "name": row["name"],
+            "birth_date": birth_date_str,
+            "city": row["city"],
+            "state": row["state"]
+        }), 200
+    except Exception as e:
+        print(f"[DiaUp] Erro ao buscar perfil no PostgreSQL: {e}")
         return jsonify({"user_id": user_id, "name": "Viajante", "birth_date": "1996-01-01", "city": "São Paulo", "state": "SP"}), 200
-    birth_date_val = row["birth_date"]
-    birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
-    return jsonify({
-        "user_id": row["user_id"] or "default",
-        "name": row["name"],
-        "birth_date": birth_date_str,
-        "city": row["city"],
-        "state": row["state"]
-    }), 200
 
 
 @app.route("/user/profile", methods=["POST"])
@@ -192,31 +196,35 @@ def update_user_profile():
     city = (data.get("city") or "São Paulo").strip()
     state = (data.get("state") or "SP").strip()
 
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute(
-        """
-        INSERT INTO user_profile (user_id, name, birth_date, city, state)
-        VALUES (%s, %s, %s, %s, %s)
-        ON CONFLICT(user_id) DO UPDATE SET
-            name = EXCLUDED.name,
-            birth_date = EXCLUDED.birth_date,
-            city = EXCLUDED.city,
-            state = EXCLUDED.state
-        """,
-        (user_id, name, birth_date, city, state)
-    )
     try:
+        db = get_db()
+        cursor = db.cursor()
         cursor.execute(
             """
-            INSERT INTO usuarios (nome, data_nascimento, cidade, estado)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO user_profile (user_id, name, birth_date, city, state)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT(user_id) DO UPDATE SET
+                name = EXCLUDED.name,
+                birth_date = EXCLUDED.birth_date,
+                city = EXCLUDED.city,
+                state = EXCLUDED.state
             """,
-            (name, birth_date if len(str(birth_date)) == 10 else None, city, state)
+            (user_id, name, birth_date, city, state)
         )
-    except Exception:
-        pass
-    db.commit()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO usuarios (nome, data_nascimento, cidade, estado)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (name, birth_date if len(str(birth_date)) == 10 else None, city, state)
+            )
+        except Exception:
+            pass
+        db.commit()
+    except Exception as e:
+        print(f"[DiaUp] Aviso: Não foi possível salvar perfil no PostgreSQL ({e}). Operando com resposta ágil com IA.")
+    
     return jsonify({"message": "Perfil atualizado com sucesso!", "profile": {"user_id": user_id, "name": name, "birth_date": birth_date, "city": city, "state": state}}), 200
 
 
@@ -224,30 +232,43 @@ def update_user_profile():
 def get_message():
     category = (request.args.get("category") or "").strip()
     user_id = (request.args.get("user_id") or "default").strip()
-    db = get_db()
-    cursor = db.cursor()
+    name_param = (request.args.get("name") or "").strip()
+    city_param = (request.args.get("city") or "").strip()
+    state_param = (request.args.get("state") or "").strip()
+    birth_param = (request.args.get("birth_date") or "").strip()
     
-    # Busca o perfil do usuário para alimentar a IA
-    cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY CASE WHEN user_id = %s THEN 0 ELSE 1 END LIMIT 1", (user_id, user_id))
-    profile_row = cursor.fetchone()
-    birth_date_val = profile_row["birth_date"] if profile_row else "1996-01-01"
-    birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
     profile = {
-        "name": profile_row["name"] if profile_row else "Viajante",
-        "birth_date": birth_date_str,
-        "city": profile_row["city"] if profile_row else "São Paulo",
-        "state": profile_row["state"] if profile_row else "SP",
+        "name": name_param or "Viajante",
+        "birth_date": birth_param or "1996-01-01",
+        "city": city_param or "São Paulo",
+        "state": state_param or "SP",
     }
+    saved_messages = []
+    
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY CASE WHEN user_id = %s THEN 0 ELSE 1 END LIMIT 1", (user_id, user_id))
+        profile_row = cursor.fetchone()
+        if profile_row:
+            birth_date_val = profile_row["birth_date"]
+            birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
+            profile = {
+                "name": profile_row["name"] or profile["name"],
+                "birth_date": birth_date_str or profile["birth_date"],
+                "city": profile_row["city"] or profile["city"],
+                "state": profile_row["state"] or profile["state"],
+            }
+        
+        cursor.execute(
+            "SELECT content FROM messages WHERE LOWER(category) = LOWER(%s) OR LOWER(category) = 'geral'",
+            (category or "Geral",)
+        )
+        saved_rows = cursor.fetchall()
+        saved_messages = [row["content"] for row in saved_rows]
+    except Exception as e:
+        print(f"[DiaUp] Erro de conexão ao PostgreSQL durante get_message: {e}. Usando fallback/IA com parâmetros do usuário.")
 
-    # Busca mensagens salvas pelo Admin na tabela messages para a categoria solicitada (ou Geral)
-    cursor.execute(
-        "SELECT content FROM messages WHERE LOWER(category) = LOWER(%s) OR LOWER(category) = 'geral'",
-        (category or "Geral",)
-    )
-    saved_rows = cursor.fetchall()
-    saved_messages = [row["content"] for row in saved_rows]
-
-    # 50% de chance de usar uma mensagem salva no Admin se houver, ou 100% IA se não houver
     if saved_messages and random.random() < 0.5:
         ai_content = random.choice(saved_messages)
     else:

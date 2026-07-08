@@ -145,7 +145,14 @@ async function getMessage() {
     currentCountdown = renewInterval;
     updateCountdownDisplay();
 
-    const queryParams = new URLSearchParams({ category: selectedCategory || "", user_id: userId }).toString();
+    const queryParams = new URLSearchParams({
+        category: selectedCategory || "",
+        user_id: userId,
+        name: profileName ? profileName.value : "",
+        birth_date: profileBirth ? profileBirth.value : "",
+        city: profileCity ? profileCity.value : "",
+        state: profileState ? profileState.value : ""
+    }).toString();
 
     try {
         const response = await fetch(`/user/get_message?${queryParams}`);
