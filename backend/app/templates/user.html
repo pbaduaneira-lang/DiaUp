@@ -6,6 +6,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500..700;1,500..700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#FF9800">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="DiaUp">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icon.svg">
     <link rel="stylesheet" href="/static/user.css">
 </head>
 <body>
@@ -40,6 +46,17 @@
                 <a class="admin-link" href="/admin">Admin</a>
             </div>
         </nav>
+
+        <div id="pwaInstallBanner" class="pwa-banner" aria-live="polite" style="display: none;">
+            <div class="pwa-banner-content">
+                <span class="pwa-icon">📲</span>
+                <div class="pwa-text">
+                    <strong>Leve o DiaUp com você!</strong>
+                    <span>Para não precisar digitar seu nome novamente e acessar o app em 1 toque, clique no menu (<strong>⋮</strong> ou <strong>[↑]</strong>) e selecione <strong>"Adicionar à tela inicial"</strong>.</span>
+                </div>
+            </div>
+            <button id="closePwaBannerBtn" class="pwa-close-btn" type="button" aria-label="Fechar aviso">&times;</button>
+        </div>
 
         <section class="hero" aria-labelledby="pageTitle">
             <div class="hero-copy">

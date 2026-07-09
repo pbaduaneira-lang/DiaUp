@@ -1,0 +1,18 @@
+{
+  "name": "DiaUp",
+  "short_name": "DiaUp",
+  "description": "Aplicativo web interativo de inteligência emocional e motivação diária.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#FF9800",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

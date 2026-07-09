@@ -19,6 +19,8 @@ const profileStatus = document.getElementById("profileStatus");
 
 const renewCountdown = document.getElementById("renewCountdown");
 const autoRenewSelect = document.getElementById("autoRenewSelect");
+const pwaInstallBanner = document.getElementById("pwaInstallBanner");
+const closePwaBannerBtn = document.getElementById("closePwaBannerBtn");
 
 let selectedCategory = "";
 let currentMessage = "";
@@ -307,7 +309,15 @@ async function loadProfile() {
         const response = await fetch(`/user/profile?user_id=${encodeURIComponent(userId)}`);
         const data = await response.json();
         if (response.ok) {
-            if (data.is_new || !data.name || !localStorage.getItem("diaup_profile_saved")) {
+            const hasValidName = data.name && data.name !== "Viajante" && data.name.trim() !== "";
+            if (!data.is_new && hasValidName) {
+                profileName.value = data.name || "";
+                profileBirth.value = data.birth_date || "";
+                profileCity.value = data.city || "";
+                profileState.value = data.state || "";
+                localStorage.setItem("diaup_profile_saved", "true");
+                checkAndShowPwaBanner();
+            } else if (!localStorage.getItem("diaup_profile_saved")) {
                 profileName.value = "";
                 profileBirth.value = "";
                 profileCity.value = "";
@@ -318,6 +328,7 @@ async function loadProfile() {
                 profileBirth.value = data.birth_date || "";
                 profileCity.value = data.city || "";
                 profileState.value = data.state || "";
+                checkAndShowPwaBanner();
             }
         }
     } catch (error) {
@@ -328,8 +339,27 @@ async function loadProfile() {
             profileCity.value = "";
             profileState.value = "";
             setTimeout(openModal, 400);
+        } else {
+            checkAndShowPwaBanner();
         }
     }
+}
+
+function checkAndShowPwaBanner() {
+    if (!pwaInstallBanner) return;
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    if (isStandalone || localStorage.getItem("diaup_pwa_banner_dismissed")) {
+        pwaInstallBanner.style.display = "none";
+        return;
+    }
+    pwaInstallBanner.style.display = "flex";
+}
+
+if (closePwaBannerBtn) {
+    closePwaBannerBtn.addEventListener("click", () => {
+        if (pwaInstallBanner) pwaInstallBanner.style.display = "none";
+        localStorage.setItem("diaup_pwa_banner_dismissed", "true");
+    });
 }
 
 profileForm.addEventListener("submit", async (event) => {
@@ -359,9 +389,11 @@ profileForm.addEventListener("submit", async (event) => {
         setTimeout(() => {
             closeModal();
             getMessage();
+            checkAndShowPwaBanner();
         }, 1200);
     } catch (error) {
         profileStatus.textContent = error.message;
         profileStatus.style.color = "#ef6f61";
     }
 });
+
