@@ -95,9 +95,24 @@ O sistema de mensagens combina Inteligência Artificial (Google Gemini 2.5 Flash
 
 ## 8. Arquitetura Técnica & Banco de Dados
 * **Backend:** Python / Flask (`backend/app/app.py`, `ai_engine.py`, `database.py`).
-* **Banco de Dados:** SQLite (`database/app.db`).
+* **Banco de Dados:** SQLite (`database/app.db`) no ambiente local e **PostgreSQL Connection Pooler** via `DATABASE_URL` no deploy na Vercel (`api/index.py`).
 * **Tabelas Principais:**
-  * `messages`: Armazena mensagens curadas da biblioteca do Admin (`id`, `content`, `category`, `created_at`).
+  * `messages`: Armazena **apenas as mensagens curadas pela biblioteca do Admin** (`id`, `content`, `category`, `created_at`). Mensagens geradas pelo Gemini na hora são efêmeras e não poluem esta tabela.
   * `user_profile`: Armazena perfil do usuário (`id`, `user_id`, `name`, `birth_date`, `city`, `state`).
   * `app_stats`: Registra contagens gerais como downloads (`stat_key`, `stat_value`).
 * **Testes:** Sempre validar alterações executando a suíte de testes com `python test_endpoints.py` no terminal.
+
+---
+
+## 9. Suporte PWA (Progressive Web App), Blindagem de Cadastro & Deploy Contínuo
+* **Arquitetura PWA (`manifest.json` & `icon.svg`):**
+  * O DiaUp está configurado para instalação nativa na tela inicial dos celulares via `/static/manifest.json` e `/static/icon.svg` (modo `standalone`, cor solar `#FF9800`).
+  * A instalação na Tela Inicial cria um compartimento isolado e permanente de `localStorage`, impedindo que o navegador limpe o `diaup_user_id` e o perfil do usuário.
+* **Blindagem de Cadastro (`loadProfile` no `user.js`):**
+  * Se a resposta da API `/user/profile` retornar um perfil válido (`!data.is_new && data.name`), o frontend automaticamente grava a flag `diaup_profile_saved` no `localStorage` e suprime a abertura desnecessária do modal de cadastro.
+* **Avisos Integadores de Instalação (`#pwaInstallBanner` e `#modalPwaCard`):**
+  * **Banner Superior (`#pwaInstallBanner`):** Aviso flutuante abaixo da barra de navegação no topo de `user.html`.
+  * **Card no Modal de Perfil (`#modalPwaCard`):** Exibido na parte inferior do modal de cadastro (`.modal-panel`), educando o usuário: *"Instale o app e nunca mais preencha este cadastro! No navegador do celular, a memória temporária pode apagar seu perfil. Para salvar em definitivo e acessar o DiaUp com apenas 1 toque, clique no menu superior (⋮ ou [↑]) e selecione 'Adicionar à tela inicial'"*.
+  * **Comportamento Standalone:** Quando o usuário acessa via PWA instalado na Tela Inicial (`matchMedia('(display-mode: standalone)')`), todos os avisos de instalação se auto-ocultam.
+* **Deploy Contínuo:**
+  * O projeto está no GitHub (`pbaduaneira-lang/DiaUp`) e conectado à **Vercel Serverless Functions (`api/index.py`)**. Todo `git push origin main` dispara um *build* e *deploy* em produção instantaneamente na nuvem.
