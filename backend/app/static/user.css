@@ -657,3 +657,43 @@ button:disabled {
     text-align: center;
     min-height: 20px;
 }
+
+/* Card PWA no interior do Modal de Perfil */
+.modal-pwa-card {
+    margin-top: 22px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255, 152, 0, 0.4);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 234, 104, 0.28) 0%, rgba(255, 152, 0, 0.18) 100%);
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.15);
+}
+
+.modal-pwa-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.modal-pwa-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.modal-pwa-header strong {
+    color: #11523f;
+    font-size: 0.98rem;
+    font-weight: 850;
+    line-height: 1.3;
+}
+
+.modal-pwa-text {
+    margin: 0;
+    color: #2c3848;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.modal-pwa-text strong {
+    color: #18212f;
+}

@@ -285,6 +285,12 @@ function openModal(e) {
     profileModal.classList.add("is-open");
     profileModal.setAttribute("aria-hidden", "false");
     profileStatus.textContent = "";
+
+    const modalPwaCard = document.getElementById("modalPwaCard");
+    if (modalPwaCard) {
+        const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+        modalPwaCard.style.display = isStandalone ? "none" : "block";
+    }
 }
 
 function closeModal(e) {
