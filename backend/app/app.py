@@ -1,12 +1,34 @@
 import random
 from datetime import datetime
 from functools import wraps
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for
-from .database import get_db, init_db
-from . import ai_engine
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for, Response
 
 app = Flask(__name__)
 app.secret_key = "diaup_secret_key_super_segura_1016"
+
+from .database import get_db, init_db
+from . import ai_engine
+
+@app.route("/user/tts", methods=["GET", "POST"])
+def user_tts():
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        text = (data.get("text") or "").strip()
+        voice = (data.get("voice") or "pt-BR-FranciscaNeural").strip()
+    else:
+        text = (request.args.get("text") or "").strip()
+        voice = (request.args.get("voice") or "pt-BR-FranciscaNeural").strip()
+
+    if not text:
+        return jsonify({"error": "O parâmetro 'text' é obrigatório."}), 400
+
+    audio_data = ai_engine.generate_tts_audio(text, voice=voice)
+    if not audio_data:
+        return jsonify({"error": "Não foi possível gerar a síntese de voz."}), 500
+
+    return Response(audio_data, mimetype="audio/mpeg")
+
+
 
 ADMIN_EMAIL = "diaup@gmail.com"
 ADMIN_PASSWORD = "diaedju1016"
@@ -207,14 +229,23 @@ def get_user_profile():
         return jsonify({"user_id": user_id, "name": "", "birth_date": "", "city": "", "state": "", "is_new": True}), 200
 
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 @app.route("/user/profile", methods=["POST"])
 def update_user_profile():
     data = request.get_json(silent=True) or {}
     user_id = (data.get("user_id") or "default").strip()
     name = (data.get("name") or "Viajante").strip()
     birth_date = (data.get("birth_date") or "1996-01-01").strip()
+    if len(birth_date) == 4 and birth_date.isdigit():
+        birth_date = f"{birth_date}-01-01"
     city = (data.get("city") or "São Paulo").strip()
     state = (data.get("state") or "SP").strip()
+
 
     try:
         db = get_db()
@@ -256,6 +287,19 @@ def get_message():
     city_param = (request.args.get("city") or "").strip()
     state_param = (request.args.get("state") or "").strip()
     birth_param = (request.args.get("birth_date") or "").strip()
+    seen_raw = request.args.get("seen") or "[]"
+    
+    seen_list = []
+    try:
+        import json
+        seen_list = json.loads(seen_raw)
+        if not isinstance(seen_list, list):
+            seen_list = []
+    except Exception:
+        seen_list = []
+
+    # Normaliza mensagens já vistas para verificação case-insensitive
+    seen_normalized = {str(s).strip().lower() for s in seen_list if s}
     
     profile = {
         "name": name_param or "Amigo(a)",
@@ -292,9 +336,20 @@ def get_message():
     except Exception as e:
         print(f"[DiaUp] Erro de conexão ao PostgreSQL durante get_message: {e}. Usando fallback/IA com parâmetros do usuário.")
 
-    if saved_messages and random.random() < 0.5:
-        ai_content = random.choice(saved_messages)
+    # 1. Filtra as mensagens salvas no Banco de Dados do Admin que AINDA NÃO foram vistas pelo usuário
+    unseen_db_messages = []
+    name_clean = profile["name"].strip().lower()
+    for msg in saved_messages:
+        msg_clean = msg.strip().lower()
+        # Verifica se o texto puro ou o texto prefixado com nome já foi visto
+        if msg_clean not in seen_normalized and f"{name_clean}, {msg_clean}" not in seen_normalized:
+            unseen_db_messages.append(msg)
+
+    # 2. Se existirem mensagens no banco ainda não vistas, apresenta uma mensagem do banco!
+    if unseen_db_messages:
+        ai_content = random.choice(unseen_db_messages)
     else:
+        # 3. Se TODAS as mensagens do banco já passaram por ali (ou banco vazio), gera nova reflexão via IA Gemini!
         ai_content = ai_engine.generate_motivational_message(profile, category)
 
     # Garante que a mensagem sempre comece com o nome do usuário seguido de vírgula
@@ -318,6 +373,86 @@ def get_message():
         "category": category or "Geral",
         "created_at": datetime.now().isoformat()
     }), 200
+
+
+
+def _resolve_user_profile():
+    """Obtém o perfil do usuário combinando parâmetros da query e o banco de dados."""
+    user_id = (request.args.get("user_id") or "default").strip()
+    name_param = (request.args.get("name") or "").strip()
+    city_param = (request.args.get("city") or "").strip()
+    state_param = (request.args.get("state") or "").strip()
+    birth_param = (request.args.get("birth_date") or "").strip()
+
+    profile = {
+        "name": name_param or "Amigo(a)",
+        "birth_date": birth_param or "1996-01-01",
+        "city": city_param or "Sua Cidade",
+        "state": state_param or "BR",
+    }
+
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        if user_id == "default":
+            cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s OR id = 1 ORDER BY id ASC LIMIT 1", (user_id,))
+        else:
+            cursor.execute("SELECT id, user_id, name, birth_date, city, state FROM user_profile WHERE user_id = %s LIMIT 1", (user_id,))
+        profile_row = cursor.fetchone()
+        if profile_row and profile_row["name"]:
+            birth_date_val = profile_row["birth_date"]
+            birth_date_str = birth_date_val.isoformat() if hasattr(birth_date_val, "isoformat") else (str(birth_date_val) if birth_date_val else "1996-01-01")
+            profile = {
+                "name": name_param or profile_row["name"] or profile["name"],
+                "birth_date": birth_param or birth_date_str or profile["birth_date"],
+                "city": city_param or profile_row["city"] or profile["city"],
+                "state": state_param or profile_row["state"] or profile["state"],
+            }
+    except Exception as e:
+        print(f"[DiaUp] Aviso ao resolver perfil do usuário: {e}")
+
+    return profile
+
+
+def _ensure_name_prefix(text, name):
+    """Garante a regra de ouro: toda mensagem começa com '{nome}, '."""
+    name = (name or "").strip()
+    if not name or not text:
+        return text
+    if not text.lower().startswith(f"{name.lower()},"):
+        for prefix in ["olá,", "olá ", "querido,", "querido ", "querida,", "querida "]:
+            if text.lower().startswith(prefix):
+                text = text[len(prefix):].strip()
+                break
+        if not text.lower().startswith(f"{name.lower()},"):
+            first_word = text.split()[0] if text.split() else ""
+            proper_nouns = {"Deus", "Jesus", "Senhor", "Brasil", "São", "Rio", "Belo", "Porto", "Curitiba", "Salvador", "Fortaleza", "Brasília", "DiaUp"}
+            if first_word not in proper_nouns and len(text) > 0:
+                text = text[0].lower() + text[1:]
+            text = f"{name}, {text}"
+    return text
+
+
+@app.route("/user/horoscope", methods=["GET"])
+def get_horoscope():
+    profile = _resolve_user_profile()
+    sign_id = (request.args.get("sign") or "").strip() or None
+    result = ai_engine.generate_horoscope(profile, sign_id=sign_id)
+    result["content"] = _ensure_name_prefix(result["content"], profile["name"])
+    result["signs"] = [
+        {"id": s["id"], "name": s["name"], "symbol": s["symbol"]}
+        for s in ai_engine.ZODIAC_SIGNS
+    ]
+    return jsonify(result), 200
+
+
+@app.route("/user/tarot", methods=["GET"])
+def get_tarot():
+    profile = _resolve_user_profile()
+    card_id = request.args.get("card_id")
+    result = ai_engine.generate_tarot_reading(profile, card_id=card_id)
+    result["content"] = _ensure_name_prefix(result["content"], profile["name"])
+    return jsonify(result), 200
 
 
 @app.route("/user/categories", methods=["GET"])

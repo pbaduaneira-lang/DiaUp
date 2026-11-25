@@ -96,10 +96,13 @@ a {
     font-size: 4rem;
     font-weight: 850;
     letter-spacing: -0.03em;
-    color: #18212f;
     margin-left: -28px;
     position: relative;
     z-index: 2;
+}
+
+.brand-dia {
+    color: #031438;
     text-shadow: 
         0 2px 10px rgba(255, 255, 255, 0.95),
         0 0 20px rgba(255, 255, 255, 0.9),
@@ -107,11 +110,14 @@ a {
 }
 
 .brand-highlight {
-    background: linear-gradient(135deg, #FF5E36, #FF9800);
+    background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
+    filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 12px rgba(0, 198, 255, 0.5));
 }
+
+
 
 .admin-link {
     min-height: 38px;
@@ -294,6 +300,122 @@ h1 {
     justify-content: space-between;
     margin-bottom: 16px;
 }
+
+/* SolAura Avatar Hero Button (Lado Esquerdo, Grande e Visível) */
+.avatar-hero-button {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 18px 8px 8px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255, 234, 104, 0.4) 0%, rgba(255, 152, 0, 0.22) 100%);
+    border: 2px solid rgba(255, 152, 0, 0.48);
+    box-shadow: 0 4px 18px rgba(255, 152, 0, 0.18);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.avatar-hero-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    border-color: #FF5E36;
+    box-shadow: 0 6px 24px rgba(255, 152, 0, 0.35);
+    background: linear-gradient(135deg, rgba(255, 234, 104, 0.55) 0%, rgba(255, 152, 0, 0.3) 100%);
+}
+
+.avatar-speaker-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.avatar-svg {
+    width: 58px;
+    height: 58px;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.avatar-aura {
+    transform-origin: 50px 50px;
+    transition: transform 0.1s ease-out;
+}
+
+.avatar-hero-button.is-speaking .avatar-rays {
+    animation: rotateRays 10s linear infinite;
+    transform-origin: 50px 50px;
+}
+
+@keyframes rotateRays {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.avatar-hero-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.avatar-hero-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.08rem;
+    font-weight: 850;
+    color: #D95200;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.avatar-hero-subtitle {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #5d4037;
+    margin-top: 2px;
+    transition: color 0.2s ease;
+}
+
+.avatar-hero-button.is-speaking {
+    border-color: #FF5E36;
+    background: linear-gradient(135deg, rgba(255, 234, 104, 0.75) 0%, rgba(255, 152, 0, 0.45) 100%);
+    box-shadow: 0 0 24px rgba(255, 152, 0, 0.5);
+    animation: pulseHeroBtn 1.8s ease-in-out infinite;
+}
+
+.avatar-hero-button.is-speaking .avatar-hero-title {
+    color: #C83800;
+}
+
+.avatar-hero-button.is-speaking .avatar-hero-subtitle {
+    color: #902800;
+}
+
+@keyframes pulseHeroBtn {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.025); }
+}
+
+.btn-audio.is-speaking {
+    background: linear-gradient(135deg, #FFEA68 0%, #FF9800 100%) !important;
+    color: #2C1810 !important;
+    font-weight: 800 !important;
+    border-color: #FF5E36 !important;
+    box-shadow: 0 0 12px rgba(255, 152, 0, 0.4);
+    animation: pulseAudioBtn 1.6s ease-in-out infinite;
+}
+
+@keyframes pulseAudioBtn {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+
 
 .category-pill,
 .date-label,
@@ -676,24 +798,619 @@ button:disabled {
 }
 
 .modal-pwa-icon {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     line-height: 1;
 }
 
 .modal-pwa-header strong {
+    font-size: 0.96rem;
     color: #11523f;
-    font-size: 0.98rem;
     font-weight: 850;
-    line-height: 1.3;
 }
 
 .modal-pwa-text {
     margin: 0;
-    color: #2c3848;
     font-size: 0.88rem;
-    line-height: 1.45;
+    line-height: 1.5;
+    color: #2c3848;
 }
 
-.modal-pwa-text strong {
-    color: #18212f;
+/* ========================================================
+   MODERNIZAÇÃO DIAUP: ABAS, HORÓSCOPO, TARÔ 3D, VOZ, TEMA
+   ======================================================== */
+
+.streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 234, 104, 0.38), rgba(255, 152, 0, 0.22));
+    border: 1px solid rgba(255, 152, 0, 0.4);
+    color: #b44b00;
+    font-size: 0.82rem;
+    font-weight: 800;
+    white-space: nowrap;
 }
+
+.theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(24, 33, 47, 0.16);
+    background: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    transform: translateY(-1px) scale(1.04);
+    background: #fff;
+}
+
+/* Seletor de Voz Neural compacto sob SolAura */
+.voice-picker {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.voice-picker-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 2px;
+}
+
+.voice-chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.voice-chip:hover {
+    border-color: #FF9800;
+    color: #c86814;
+}
+
+.voice-chip.is-active {
+    background: linear-gradient(135deg, #FF9800, #FF5E36);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+}
+
+/* Painel principal com glassmorphism refinado */
+.message-panel {
+    border-radius: 16px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 18px 22px 20px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Abas de modo (Mensagem | Horóscopo | Tarô) */
+.mode-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 4px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    background: rgba(24, 33, 47, 0.06);
+}
+
+.mode-tab {
+    min-height: 36px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    padding: 0 8px;
+}
+
+.mode-tab:hover {
+    color: var(--ink);
+}
+
+.mode-tab.is-active {
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: 0 4px 12px rgba(24, 33, 47, 0.1);
+}
+
+.mode-view[hidden] {
+    display: none;
+}
+
+.panel-head-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.icon-action-btn:hover {
+    transform: scale(1.08);
+    border-color: var(--coral);
+}
+
+.icon-action-btn.is-favorited {
+    background: rgba(239, 111, 97, 0.12);
+    border-color: var(--coral);
+}
+
+/* Transição suave ao atualizar citações */
+.quote-content {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.quote-content.is-updating {
+    opacity: 0.35;
+    transform: translateY(4px);
+}
+
+.filter-button {
+    transition: all 0.18s ease;
+}
+
+.filter-button:hover:not(.is-active) {
+    border-color: rgba(24, 33, 47, 0.35);
+    color: var(--ink);
+    transform: translateY(-1px);
+}
+
+.primary-button {
+    border-radius: 10px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.primary-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+    box-shadow: 0 14px 30px rgba(239, 111, 97, 0.38);
+}
+
+.ghost-button {
+    border-radius: 10px;
+    transition: all 0.18s ease;
+}
+
+.ghost-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(24, 33, 47, 0.3);
+}
+
+.btn-share {
+    border-color: rgba(0, 114, 255, 0.32);
+    color: #0058c7;
+}
+
+.btn-share:hover {
+    background: rgba(0, 198, 255, 0.1);
+    border-color: #0072FF;
+}
+
+/* Horóscopo */
+.horoscope-head {
+    gap: 8px;
+}
+
+.horoscope-sign-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.horoscope-pill {
+    background: linear-gradient(135deg, rgba(255, 234, 104, 0.45), rgba(255, 152, 0, 0.24));
+    color: #9a4200;
+}
+
+.sign-select {
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+}
+
+.horoscope-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(24, 33, 47, 0.05);
+    color: #344054;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+/* Tarô 3D */
+.tarot-pill {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(0, 114, 255, 0.14));
+    color: #5b21b6;
+}
+
+.tarot-stage {
+    margin-bottom: 14px;
+}
+
+.tarot-deck {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 4px 0 12px;
+    perspective: 1000px;
+}
+
+.tarot-card-slot {
+    width: 92px;
+    height: 132px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    perspective: 1000px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.tarot-card-slot:hover:not(.is-flipped):not(.is-dimmed) {
+    transform: translateY(-6px) scale(1.04);
+}
+
+.tarot-card-slot.is-dimmed {
+    opacity: 0.35;
+    transform: scale(0.92);
+    pointer-events: none;
+}
+
+.tarot-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tarot-card-slot.is-flipped .tarot-card-inner {
+    transform: rotateY(180deg);
+}
+
+.tarot-card-back,
+.tarot-card-front {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+}
+
+.tarot-card-back {
+    background: radial-gradient(circle at 50% 35%, #1d356b, #031438 80%);
+    border: 2px solid #f3c14b;
+    box-shadow: 0 10px 22px rgba(3, 20, 56, 0.26);
+    color: #FFEA68;
+    gap: 6px;
+}
+
+.tarot-back-sun {
+    font-size: 1.8rem;
+    filter: drop-shadow(0 0 8px rgba(255, 234, 104, 0.6));
+}
+
+.tarot-back-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.tarot-card-front {
+    transform: rotateY(180deg);
+    background: linear-gradient(160deg, #fffdf6 0%, #fff3d6 100%);
+    border: 2px solid #FF9800;
+    box-shadow: 0 12px 26px rgba(255, 152, 0, 0.28);
+    color: #18212f;
+    gap: 4px;
+}
+
+.tarot-roman {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #b45309;
+}
+
+.tarot-symbol {
+    font-size: 2rem;
+    line-height: 1.1;
+}
+
+.tarot-name {
+    font-size: 0.76rem;
+    font-weight: 850;
+    line-height: 1.15;
+    color: #031438;
+}
+
+.tarot-quote {
+    min-height: 86px;
+}
+
+/* Abas da seção de Histórico / Favoritos */
+.history-tabs {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.history-tab {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.history-tab.is-active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+.history-item-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.history-item-head strong {
+    margin-bottom: 0;
+}
+
+.history-remove-btn {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.history-remove-btn:hover {
+    background: rgba(239, 111, 97, 0.14);
+    color: var(--coral);
+}
+
+/* Toast flutuante */
+.diaup-toast {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #031438;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    box-shadow: 0 12px 30px rgba(3, 20, 56, 0.32);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 1200;
+}
+
+.diaup-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ========================================================
+   MODO NOTURNO ESTRELADO (body.theme-night)
+   ======================================================== */
+body.theme-night {
+    color-scheme: dark;
+    --ink: #f1f5f9;
+    --muted: #94a3b8;
+    --line: rgba(148, 163, 184, 0.22);
+    --surface: #0f1b33;
+    --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    background:
+        radial-gradient(circle at 18% 15%, rgba(0, 198, 255, 0.14), transparent 40%),
+        radial-gradient(circle at 82% 22%, rgba(255, 152, 0, 0.12), transparent 38%),
+        linear-gradient(150deg, #040d21 0%, #0a1836 52%, #0d1f42 100%);
+}
+
+body.theme-night .brand-dia {
+    color: #031438;
+    text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.95),
+        0 0 24px rgba(255, 234, 104, 0.75);
+}
+
+body.theme-night .lead {
+    color: #cbd5e1;
+}
+
+body.theme-night .eyebrow,
+body.theme-night .section-kicker {
+    color: #5eead4;
+}
+
+body.theme-night .admin-link,
+body.theme-night .theme-toggle-btn {
+    background: rgba(15, 27, 51, 0.78);
+    border-color: rgba(148, 163, 184, 0.28);
+    color: #f1f5f9;
+}
+
+body.theme-night .streak-badge {
+    background: rgba(255, 152, 0, 0.18);
+    color: #ffd166;
+}
+
+body.theme-night .message-panel {
+    background: rgba(13, 25, 49, 0.84);
+    border-color: rgba(148, 163, 184, 0.22);
+}
+
+body.theme-night .mode-tabs {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.theme-night .mode-tab.is-active {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+body.theme-night blockquote {
+    color: #f8fafc;
+}
+
+body.theme-night .filter-button,
+body.theme-night .ghost-button,
+body.theme-night .icon-action-btn,
+body.theme-night .sign-select,
+body.theme-night .voice-chip,
+body.theme-night .history-tab {
+    background: rgba(15, 27, 51, 0.82);
+    border-color: rgba(148, 163, 184, 0.25);
+    color: #e2e8f0;
+}
+
+body.theme-night .filter-button.is-active,
+body.theme-night .history-tab.is-active {
+    background: #00C6FF;
+    border-color: #00C6FF;
+    color: #031438;
+}
+
+body.theme-night .btn-audio {
+    color: #ffd166;
+    border-color: rgba(255, 152, 0, 0.45);
+}
+
+body.theme-night .btn-share {
+    color: #7dd3fc;
+    border-color: rgba(0, 198, 255, 0.4);
+}
+
+body.theme-night .meta-chip {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+}
+
+body.theme-night .avatar-hero-subtitle {
+    color: #fde68a;
+}
+
+body.theme-night .avatar-hero-title {
+    color: #ffb74d;
+}
+
+body.theme-night .history-item,
+body.theme-night .empty-history {
+    background: rgba(15, 27, 51, 0.72);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+}
+
+body.theme-night .modal-panel {
+    background: #0f1b33;
+    border-color: rgba(148, 163, 184, 0.25);
+    color: #f1f5f9;
+}
+
+body.theme-night .modal-desc,
+body.theme-night .profile-form label {
+    color: #cbd5e1;
+}
+
+body.theme-night .profile-form input {
+    background: #081226;
+    color: #f8fafc;
+    border-color: rgba(148, 163, 184, 0.28);
+}
+
+body.theme-night .pwa-text {
+    color: #e2e8f0;
+}
+
+body.theme-night .pwa-text strong {
+    color: #ffd166;
+}
+
+@media (max-width: 520px) {
+    .tarot-card-slot {
+        width: 82px;
+        height: 118px;
+    }
+
+    .mode-tab {
+        font-size: 0.78rem;
+    }
+}
+

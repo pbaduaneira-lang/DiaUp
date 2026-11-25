@@ -39,9 +39,11 @@
                         </g>
                     </svg>
                 </div>
-                <span class="brand-text">Dia<span class="brand-highlight">Up</span></span>
+                <span class="brand-text"><span class="brand-dia">Dia</span><span class="brand-highlight">Up</span></span>
             </a>
             <div class="nav-links">
+                <span id="streakBadge" class="streak-badge" title="Sua sequência diária no DiaUp">🔥 1 dia</span>
+                <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Alternar tema Dia / Noite" aria-label="Alternar tema">🌙</button>
                 <button id="openProfileBtn" class="profile-button" type="button">Meu Perfil</button>
                 <a class="admin-link" href="/admin">Admin</a>
             </div>
@@ -62,49 +64,208 @@
             <div class="hero-copy">
                 <p class="eyebrow">Foco para o seu dia</p>
                 <h1 id="pageTitle">Uma mensagem curta para reacender sua energia.</h1>
-                <p class="lead">Escolha uma categoria ou deixe o app surpreender voce com uma frase motivacional.</p>
+                <p class="lead">Escolha uma categoria ou deixe o app surpreender você com uma frase motivacional.</p>
+
+                <!-- Avatar SolAura em Destaque (Lado Esquerdo) -->
+                <button id="avatarSpeakerBtn" class="avatar-hero-button" type="button" title="SolAura IA - Voz Neural e Avatar Recitando">
+                    <div class="avatar-speaker-container" id="avatarSpeaker">
+                        <svg class="avatar-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="avatarGlow" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#FFEA68" stop-opacity="0.9" />
+                                    <stop offset="60%" stop-color="#FF9800" stop-opacity="0.6" />
+                                    <stop offset="100%" stop-color="#FF5E36" stop-opacity="0" />
+                                </radialGradient>
+                                <linearGradient id="avatarFaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#FFF3B0" />
+                                    <stop offset="100%" stop-color="#FFC107" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="avatar-aura" id="avatarAura" cx="50" cy="50" r="46" fill="url(#avatarGlow)" />
+                            <g class="avatar-rays" id="avatarRays" stroke="#FF9800" stroke-width="3.2" stroke-linecap="round" opacity="0.85">
+                                <line x1="50" y1="5" x2="50" y2="14" />
+                                <line x1="50" y1="86" x2="50" y2="95" />
+                                <line x1="5" y1="50" x2="14" y2="50" />
+                                <line x1="86" y1="50" x2="95" y2="50" />
+                                <line x1="18" y1="18" x2="25" y2="25" />
+                                <line x1="75" y1="75" x2="82" y2="82" />
+                                <line x1="18" y1="82" x2="25" y2="75" />
+                                <line x1="75" y1="18" x2="82" y2="25" />
+                            </g>
+                            <circle cx="50" cy="50" r="27" fill="url(#avatarFaceGrad)" stroke="#FF9800" stroke-width="2" />
+                            <circle class="avatar-eye left-eye" cx="40" cy="44" r="3.5" fill="#2C1810" />
+                            <circle class="avatar-eye right-eye" cx="60" cy="44" r="3.5" fill="#2C1810" />
+                            <circle cx="38.5" cy="42.5" r="1.2" fill="#FFFFFF" />
+                            <circle cx="58.5" cy="42.5" r="1.2" fill="#FFFFFF" />
+                            <ellipse cx="33" cy="52" rx="4" ry="2.5" fill="#FF5E36" opacity="0.4" />
+                            <ellipse cx="67" cy="52" rx="4" ry="2.5" fill="#FF5E36" opacity="0.4" />
+                            <path class="avatar-mouth" id="avatarMouth" d="M 40 57 Q 50 63 60 57" stroke="#2C1810" stroke-width="2.6" stroke-linecap="round" fill="none" />
+                        </svg>
+                    </div>
+                    <div class="avatar-hero-info">
+                        <span class="avatar-hero-title">
+                            <span class="sound-wave-icon">🔊</span> SolAura IA
+                        </span>
+                        <span id="avatarStatusBadge" class="avatar-hero-subtitle">Toque para ouvir a mensagem</span>
+                    </div>
+                </button>
+
+                <div class="voice-picker" aria-label="Escolher voz neural">
+                    <span class="voice-picker-label">Voz:</span>
+                    <button type="button" class="voice-chip is-active" data-voice="pt-BR-FranciscaNeural">Francisca</button>
+                    <button type="button" class="voice-chip" data-voice="pt-BR-AntonioNeural">Antonio</button>
+                    <button type="button" class="voice-chip" data-voice="pt-BR-ThalitaNeural">Thalita</button>
+                </div>
             </div>
 
             <section class="message-panel" aria-live="polite">
-                <div class="panel-head">
-                    <span id="messageCategory" class="category-pill">Pronto</span>
-                    <div class="auto-renew-wrapper">
-                        <div class="auto-renew-control" title="Configurar renovação automática da mensagem">
-                            <span class="renew-icon">⏳</span>
-                            <span id="renewCountdown" class="renew-text">3:00</span>
-                            <select id="autoRenewSelect" class="renew-select" aria-label="Tempo de renovação">
-                                <option value="60">1 min</option>
-                                <option value="180" selected>3 min</option>
-                                <option value="300">5 min</option>
-                                <option value="600">10 min</option>
-                                <option value="0">Pausar</option>
-                            </select>
+                <!-- Seletor de Modos: Mensagem | Horóscopo | Tarô -->
+                <div class="mode-tabs" role="tablist" aria-label="Experiências do DiaUp">
+                    <button id="tabMessage" class="mode-tab is-active" type="button" role="tab" aria-selected="true" data-mode="message">✨ Mensagem</button>
+                    <button id="tabHoroscope" class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="horoscope">♈ Horóscopo</button>
+                    <button id="tabTarot" class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="tarot">🔮 Tarô do Dia</button>
+                </div>
+
+                <!-- MODO 1: MENSAGEM MOTIVACIONAL -->
+                <div id="viewMessage" class="mode-view is-active">
+                    <div class="panel-head">
+                        <span id="messageCategory" class="category-pill">Pronto</span>
+                        <div class="panel-head-right">
+                            <span id="messageDate" class="date-label">Agora</span>
+                            <button id="favoriteBtn" class="icon-action-btn" type="button" title="Salvar nos favoritos" aria-label="Favoritar mensagem">🤍</button>
                         </div>
-                        <span id="messageDate" class="date-label">Agora</span>
+                    </div>
+
+                    <blockquote id="messageContent" class="quote-content">Toque no botao abaixo para receber sua primeira mensagem.</blockquote>
+
+                    <div class="category-row" id="categoryFilters" aria-label="Categorias"></div>
+
+                    <div class="actions">
+                        <button id="getMessageBtn" class="primary-button" type="button">Nova mensagem</button>
+                        <button id="btn-listen" class="ghost-button btn-audio" type="button">🔊 Ouvir</button>
+                        <button id="shareCardBtn" class="ghost-button btn-share" type="button" title="Gerar imagem para WhatsApp / Stories">🖼️ Card</button>
+                        <button id="copyMessageBtn" class="ghost-button" type="button">Copiar</button>
                     </div>
                 </div>
 
-                <blockquote id="messageContent">Toque no botao abaixo para receber sua primeira mensagem.</blockquote>
+                <!-- MODO 2: HORÓSCOPO DIÁRIO -->
+                <div id="viewHoroscope" class="mode-view" hidden>
+                    <div class="panel-head horoscope-head">
+                        <div class="horoscope-sign-wrap">
+                            <span id="horoscopeSignBadge" class="category-pill horoscope-pill">☀️ Seu Signo</span>
+                            <select id="horoscopeSignSelect" class="sign-select" aria-label="Escolher signo">
+                                <option value="">Automático (Perfil)</option>
+                                <option value="aries">♈ Áries</option>
+                                <option value="touro">♉ Touro</option>
+                                <option value="gemeos">♊ Gêmeos</option>
+                                <option value="cancer">♋ Câncer</option>
+                                <option value="leao">♌ Leão</option>
+                                <option value="virgem">♍ Virgem</option>
+                                <option value="libra">♎ Libra</option>
+                                <option value="escorpiao">♏ Escorpião</option>
+                                <option value="sagitario">♐ Sagitário</option>
+                                <option value="capricornio">♑ Capricórnio</option>
+                                <option value="aquario">♒ Aquário</option>
+                                <option value="peixes">♓ Peixes</option>
+                            </select>
+                        </div>
+                        <span id="horoscopeElement" class="date-label">Astros de hoje</span>
+                    </div>
 
-                <div class="category-row" id="categoryFilters" aria-label="Categorias"></div>
+                    <div id="horoscopeMeta" class="horoscope-meta">
+                        <span class="meta-chip" id="horoscopeEnergy">✨ Energia</span>
+                        <span class="meta-chip" id="horoscopeColor">🎨 Cor do dia</span>
+                        <span class="meta-chip" id="horoscopeNumber">🍀 Sorte</span>
+                    </div>
 
-                <div class="actions">
-                    <button id="getMessageBtn" class="primary-button" type="button">Nova mensagem</button>
-                    <button id="btn-listen" class="ghost-button btn-audio" type="button">🔊 Ouvir Mensagem</button>
-                    <button id="copyMessageBtn" class="ghost-button" type="button">Copiar</button>
+                    <blockquote id="horoscopeContent" class="quote-content">Consultando os astros para o seu dia...</blockquote>
+
+                    <div class="actions">
+                        <button id="refreshHoroscopeBtn" class="primary-button" type="button">✨ Atualizar Horóscopo</button>
+                        <button id="listenHoroscopeBtn" class="ghost-button btn-audio" type="button">🔊 Ouvir</button>
+                        <button id="shareHoroscopeBtn" class="ghost-button btn-share" type="button">🖼️ Card</button>
+                        <button id="copyHoroscopeBtn" class="ghost-button" type="button">Copiar</button>
+                    </div>
+                </div>
+
+                <!-- MODO 3: TARÔ DO DIA (3D FLIP) -->
+                <div id="viewTarot" class="mode-view" hidden>
+                    <div class="panel-head">
+                        <span id="tarotBadge" class="category-pill tarot-pill">🔮 Escolha 1 carta</span>
+                        <span id="tarotKeyword" class="date-label">Arcanos Maiores</span>
+                    </div>
+
+                    <div id="tarotStage" class="tarot-stage">
+                        <div id="tarotDeck" class="tarot-deck" aria-label="Escolha uma carta de Tarô">
+                            <button type="button" class="tarot-card-slot" data-slot="0" aria-label="Escolher primeira carta">
+                                <div class="tarot-card-inner">
+                                    <div class="tarot-card-back">
+                                        <span class="tarot-back-sun">☀️</span>
+                                        <span class="tarot-back-label">DiaUp</span>
+                                    </div>
+                                    <div class="tarot-card-front">
+                                        <span class="tarot-roman"></span>
+                                        <span class="tarot-symbol"></span>
+                                        <strong class="tarot-name"></strong>
+                                    </div>
+                                </div>
+                            </button>
+                            <button type="button" class="tarot-card-slot" data-slot="1" aria-label="Escolher segunda carta">
+                                <div class="tarot-card-inner">
+                                    <div class="tarot-card-back">
+                                        <span class="tarot-back-sun">☀️</span>
+                                        <span class="tarot-back-label">DiaUp</span>
+                                    </div>
+                                    <div class="tarot-card-front">
+                                        <span class="tarot-roman"></span>
+                                        <span class="tarot-symbol"></span>
+                                        <strong class="tarot-name"></strong>
+                                    </div>
+                                </div>
+                            </button>
+                            <button type="button" class="tarot-card-slot" data-slot="2" aria-label="Escolher terceira carta">
+                                <div class="tarot-card-inner">
+                                    <div class="tarot-card-back">
+                                        <span class="tarot-back-sun">☀️</span>
+                                        <span class="tarot-back-label">DiaUp</span>
+                                    </div>
+                                    <div class="tarot-card-front">
+                                        <span class="tarot-roman"></span>
+                                        <span class="tarot-symbol"></span>
+                                        <strong class="tarot-name"></strong>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <blockquote id="tarotContent" class="quote-content tarot-quote">Respire fundo, pense no seu dia e toque em uma das 3 cartas acima para revelar seu Arcano.</blockquote>
+                    </div>
+
+                    <div class="actions">
+                        <button id="resetTarotBtn" class="primary-button" type="button">🔮 Sortear nova carta</button>
+                        <button id="listenTarotBtn" class="ghost-button btn-audio" type="button">🔊 Ouvir</button>
+                        <button id="shareTarotBtn" class="ghost-button btn-share" type="button">🖼️ Card</button>
+                        <button id="copyTarotBtn" class="ghost-button" type="button">Copiar</button>
+                    </div>
                 </div>
             </section>
         </section>
 
-        <section class="history-strip" aria-label="Ultimas mensagens vistas">
+        <section class="history-strip" aria-label="Ultimas mensagens vistas e favoritos">
             <div>
-                <p class="section-kicker">Historico rapido</p>
-                <h2>Mensagens que passaram por aqui</h2>
+                <p class="section-kicker">Sua jornada</p>
+                <h2 id="historySectionTitle">Mensagens que passaram por aqui</h2>
+                <div class="history-tabs">
+                    <button id="historyTabBtn" class="history-tab is-active" type="button">Recentes</button>
+                    <button id="favoritesTabBtn" class="history-tab" type="button">❤️ Favoritos (<span id="favoritesCount">0</span>)</button>
+                </div>
             </div>
             <div id="messageHistory" class="history-list">
                 <p class="empty-history">As mensagens recebidas nesta sessao aparecem aqui.</p>
             </div>
         </section>
+
+        <div id="diaupToast" class="diaup-toast" role="status" aria-live="polite"></div>
     </main>
 
     <div id="profileModal" class="modal-backdrop" aria-hidden="true">

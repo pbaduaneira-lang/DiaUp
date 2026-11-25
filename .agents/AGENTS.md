@@ -19,8 +19,8 @@ A identidade visual do DiaUp foi projetada para ser imponente, moderna e radiant
 * **Texto "DiaUp" em Dobro (`.brand-text`):**
   * Fonte **Outfit**, peso pesado (`850`), tamanho **4rem** (`64px`) no desktop e **3.1rem** no mobile.
   * O texto sobrepõe estrategicamente os raios do sol (`margin-left: -28px` no desktop e `-20px` no mobile).
-  * Protegido por um intenso sombreado luminoso branco (`text-shadow`) para garantir leitura perfeita sobre o SVG do sol.
-  * A sílaba **"Up"** (`.brand-highlight`) possui gradiente coral/laranja em sincronia com o sol.
+  * **A sílaba "Dia" (`.brand-dia`):** Azul Marinho bem escuro e denso (`#031438`) com sombra suave branca (`text-shadow`) para destaque.
+  * **A sílaba "Up" (`.brand-highlight`):** Gradiente vibrante em Azul Celeste Neon (`linear-gradient(135deg, #00C6FF, #0072FF)`) com filtro `drop-shadow(0 0 12px rgba(0, 198, 255, 0.5))`, garantindo alto contraste e vivacidade.
 
 ---
 
@@ -53,66 +53,47 @@ O sistema é organizado rigorosamente em **7 categorias temáticas principais**,
 ## 6. Motor de IA & Regras de Geração de Mensagens (`ai_engine.py` / `app.py`)
 O sistema de mensagens combina Inteligência Artificial (Google Gemini 2.5 Flash / Fallback Local) com a biblioteca curada pelo Admin:
 
-### A. Sinergia Admin + IA
-* No endpoint `/user/get_message`, o sistema busca mensagens salvas pelo Admin na tabela SQLite `messages` para a categoria solicitada (ou 'Geral').
-* Se existirem mensagens gravadas no Admin, há **50% de chance** de exibir uma mensagem curada do Admin e **50% de chance** de gerar uma nova reflexão via IA.
+### A. Regras de Busca: Prioridade do Banco de Dados + Sem Repetição Recente
+* No endpoint `/user/get_message`, o sistema **busca primeiramente as mensagens salvas no Banco de Dados** (`messages` do Admin) para a categoria solicitada.
+* **Filtragem de Vistas:** O sistema verifica se a mensagem do banco já foi incluída em *Mensagens que passaram por aqui* (histórico da sessão).
+* **Se houver mensagem do banco ainda não exibida:** Apresenta essa mensagem do banco imediatamente.
+* **Se TODAS as mensagens do banco já passaram por ali (ou banco vazio):** A IA Gemini gera uma nova reflexão inédita e altamente personalizada.
 
 ### B. Regra de Ouro: Vocativo e Nome Sempre no Início
-* **TODA MENSAGEM (IA, Fallback ou Admin) DEVE OBRIGATORIAMENTE COMEÇAR COM O NOME DO USUÁRIO SEGUIDO DE VÍRGULA** (ex: `"Mariana, cuidar de si mesmo em Belo Horizonte..."` ou `"Carlos, acredite nos seus sonhos..."`).
-* **Motivo:** O banco de dados (`user_profile`) não armazena gênero. Iniciar diretamente com o nome e vírgula é universal, elegante, neutro e evita erros gramaticais ou de adivinhação de gênero (nunca usar "Querido/Querida").
-* **Garantia no Código (`app.py`):** Se a mensagem gerada ou resgatada não iniciar com o nome do usuário, o backend aplica automaticamente o prefixo `"{nome}, "` e ajusta a capitalização da primeira palavra (respeitando nomes próprios, siglas e palavras como "Deus", "Jesus", "Brasil", "DiaUp").
+* **TODA MENSAGEM DEVE OBRIGATORIAMENTE COMEÇAR COM O NOME DO USUÁRIO SEGUIDO DE VÍRGULA** (ex: `"Mariana, cuidar de si mesmo..."` ou `"Carlos, acredite nos seus sonhos..."`).
+* O backend garante automaticamente o prefixo `"{nome}, "` caso a mensagem gerada não o possua.
 
-### C. Diretrizes Emocionais de Conteúdo
-1. **Curto e Direto:** Máximo de 3 a 4 linhas, ideal para leitura rápida no celular.
-2. **Maturidade Adequada:** Adaptação de tom e vocabulário à idade calculada do usuário.
-3. **Toque de Empatia Local:** Citar de forma sutil e natural a cidade/estado do usuário.
+### C. Diretrizes Emocionais de Conteúdo & Sem Menção a Cidade
+1. **Curto e Direto:** Máximo de 3 a 4 linhas (leitura rápida em celular).
+2. **Maturidade Adequada:** Adaptação de tom e vocabulário à idade do usuário.
+3. **Sem Menção a Localização Geográfica:** Proibido citar cidade ou estado nas reflexões. A mensagem deve ser atemporal e universalmente acolhedora.
 4. **Variabilidade Máxima:** Evitar clichês e reestruturar frases de forma criativa.
 
-### D. Carregamento Imediato & Renovação Automática por Temporizador
-* **Sem Tela Parada ao Abrir:** O aplicativo carrega e exibe automaticamente a primeira mensagem da IA ao ser aberto, saudando o usuário instantaneamente sem exigir cliques iniciais.
-* **Temporizador de Inspiração Contínua (`#renewCountdown` / `#autoRenewSelect`):**
-  * O painel de reflexão conta com um temporizador regressivo ao vivo (ex: `⏳ 3:00`, `2:59`...) que busca uma nova mensagem automaticamente ao zerar o ciclo.
-  * O usuário tem controle total do intervalo no menu suspenso: **1 min, 3 min, 5 min, 10 min ou Pausar**.
+### D. Emissão Exclusiva por Clique (Sem Temporizador por Tempo)
+* A renovação de mensagens ocorre **unicamente através do clique do usuário** no botão **"Nova mensagem"** ou no filtro de categorias. Não há temporizador automático regressivo.
 
 ---
 
-## 7. Painel Administrativo, Autenticação, Edição & Estatísticas (`/admin`)
+## 7. Motor de Voz Neural de Estúdio & Avatar SolAura IA
+* **Voz de Estúdio (`/user/tts`):** Síntese de áudio MP3 utilizando a voz neural de estúdio Francisca (`pt-BR-FranciscaNeural` via `edge-tts`), com expressividade humana, pausas de respiração naturais e tom caloroso em Português Brasileiro.
+* **Avatar SolAura IA (`#avatarSpeakerBtn`):**
+  * Posicionado no lado esquerdo da tela em destaque sob a frase introdutória.
+  * Conta com **Lip-Sync Visualizer via Web Audio API (`AudioContext` / `AnalyserNode`)**: analisa a frequência do áudio em tempo real e movimenta a boca (`avatarMouth`) e a aura (`avatarAura`) do avatar sincronizadas à voz.
+
+---
+
+## 8. Painel Administrativo, Autenticação, Edição & Estatísticas (`/admin`)
 * **Acesso Restrito & Autenticação (Login e Senha):**
-  * O acesso ao painel de administração (`/admin`) e a todos os seus endpoints de API (`/admin/add_message`, `/admin/messages`, `/admin/messages/<id>`, `/admin/stats`) é **rigorosamente protegido** por sessão via cookies e exige login prévio.
-  * **Credenciais Exclusivas Oficiais (Fixas):**
-    * **E-mail (Login):** `diaup@gmail.com`
-    * **Senha:** `diaedju1016`
-  * O controle é feito através do decorador `@admin_required` no backend (`app.py`). Requisições não autenticadas em rotas de páginas são redirecionadas para `/admin/login`, e em rotas de API recebem status `401 Unauthorized`.
-  * O painel conta com o botão **"🚪 Sair"** no topo para encerrar a sessão imediatamente e retornar à tela de login.
-* **Biblioteca de Mensagens & Edição Interativa:**
-  * Permite ao administrador logado adicionar novas reflexões personalizadas e remover mensagens existentes.
-  * **Edição de Mensagens (`PUT /admin/messages/<id>`):** Ao clicar no botão **"Editar"** ao lado de qualquer mensagem na biblioteca, um modal interativo (`#editModal`) se abre, permitindo alterar o texto e reclassificar a categoria em tempo real sem perder o foco ou precisar recriar o item.
-* **Acompanhamento de Métricas (`/admin/stats`):**
-  * O botão **"Relatório de Downloads & Cadastros"** abre um modal interativo no próprio painel.
-  * Apresenta o contador real de **Downloads** (registrados via `/api/stats/download`), total de **Usuários Cadastrados** na tabela `user_profile` e a lista dos últimos usuários cadastrados (com nome, idade e localização).
+  * Credenciais exclusivas: `diaup@gmail.com` / `diaedju1016`.
+* **Biblioteca & Estatísticas:**
+  * Permite ao administrador adicionar, editar (`PUT /admin/messages/<id>`) e deletar mensagens.
+  * Acompanhamento de relatórios de downloads e cadastros (`/admin/stats`).
 
 ---
 
-## 8. Arquitetura Técnica & Banco de Dados
-* **Backend:** Python / Flask (`backend/app/app.py`, `ai_engine.py`, `database.py`).
-* **Banco de Dados:** SQLite (`database/app.db`) no ambiente local e **PostgreSQL Connection Pooler** via `DATABASE_URL` no deploy na Vercel (`api/index.py`).
-* **Tabelas Principais:**
-  * `messages`: Armazena **apenas as mensagens curadas pela biblioteca do Admin** (`id`, `content`, `category`, `created_at`). Mensagens geradas pelo Gemini na hora são efêmeras e não poluem esta tabela.
-  * `user_profile`: Armazena perfil do usuário (`id`, `user_id`, `name`, `birth_date`, `city`, `state`).
-  * `app_stats`: Registra contagens gerais como downloads (`stat_key`, `stat_value`).
-* **Testes:** Sempre validar alterações executando a suíte de testes com `python test_endpoints.py` no terminal.
+## 9. Arquitetura Técnica & Deploy Contínuo
+* **Backend:** Python / Flask (`app.py`, `ai_engine.py`, `database.py`).
+* **Suporte a `.env`:** O sistema carrega a chave `GEMINI_API_KEY` do arquivo `.env`.
+* **Banco de Dados:** SQLite (`database/app.db`) local e PostgreSQL no deploy na Vercel (`api/index.py`).
+* **Deploy Contínuo:** Repositório no GitHub (`pbaduaneira-lang/DiaUp`) conectado com Vercel Serverless Functions.
 
----
-
-## 9. Suporte PWA (Progressive Web App), Blindagem de Cadastro & Deploy Contínuo
-* **Arquitetura PWA (`manifest.json` & `icon.svg`):**
-  * O DiaUp está configurado para instalação nativa na tela inicial dos celulares via `/static/manifest.json` e `/static/icon.svg` (modo `standalone`, cor solar `#FF9800`).
-  * A instalação na Tela Inicial cria um compartimento isolado e permanente de `localStorage`, impedindo que o navegador limpe o `diaup_user_id` e o perfil do usuário.
-* **Blindagem de Cadastro (`loadProfile` no `user.js`):**
-  * Se a resposta da API `/user/profile` retornar um perfil válido (`!data.is_new && data.name`), o frontend automaticamente grava a flag `diaup_profile_saved` no `localStorage` e suprime a abertura desnecessária do modal de cadastro.
-* **Avisos Integadores de Instalação (`#pwaInstallBanner` e `#modalPwaCard`):**
-  * **Banner Superior (`#pwaInstallBanner`):** Aviso flutuante abaixo da barra de navegação no topo de `user.html`.
-  * **Card no Modal de Perfil (`#modalPwaCard`):** Exibido na parte inferior do modal de cadastro (`.modal-panel`), educando o usuário: *"Instale o app e nunca mais preencha este cadastro! No navegador do celular, a memória temporária pode apagar seu perfil. Para salvar em definitivo e acessar o DiaUp com apenas 1 toque, clique no menu superior (⋮ ou [↑]) e selecione 'Adicionar à tela inicial'"*.
-  * **Comportamento Standalone:** Quando o usuário acessa via PWA instalado na Tela Inicial (`matchMedia('(display-mode: standalone)')`), todos os avisos de instalação se auto-ocultam.
-* **Deploy Contínuo:**
-  * O projeto está no GitHub (`pbaduaneira-lang/DiaUp`) e conectado à **Vercel Serverless Functions (`api/index.py`)**. Todo `git push origin main` dispara um *build* e *deploy* em produção instantaneamente na nuvem.

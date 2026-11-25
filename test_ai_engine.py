@@ -13,11 +13,11 @@ class TestAIEngine(unittest.TestCase):
         self.assertEqual(age_invalid, 28)
 
     def test_fallback_message(self):
-        msg = generate_fallback_message("Carlos", 30, "Curitiba", "PR", "Trabalho")
+        msg = generate_fallback_message("Carlos", 30, "Trabalho")
         self.assertIn("Carlos", msg)
-        self.assertIn("Curitiba", msg)
         self.assertIn("30", msg)
         self.assertTrue(len(msg) > 20)
+
 
     def test_generate_motivational_message_fallback(self):
         profile = {

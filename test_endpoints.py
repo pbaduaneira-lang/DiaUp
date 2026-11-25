@@ -145,5 +145,30 @@ class TestEndpoints(unittest.TestCase):
         self.assertEqual(res_after_logout.status_code, 401)
         print("\n--- Teste de Fluxo de Autenticação Admin (Login, Logout e Acesso Negado) Concluído ---")
 
+    def test_user_tts(self):
+        res = self.client.get('/user/tts?text=Mariana,%20cuidar%20da%20sa%C3%BAde%20%C3%A9%20fundamental.')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.content_type, 'audio/mpeg')
+        self.assertTrue(len(res.data) > 500)
+        print(f"\n--- Teste /user/tts Concluído com Sucesso ({len(res.data)} bytes de áudio gerados) ---")
+
+    def test_user_horoscope(self):
+        res = self.client.get('/user/horoscope?name=Mariana&birth_date=1994-08-20')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertEqual(data['sign'], 'Leão')
+        self.assertIn('lucky_number', data)
+        self.assertIn('lucky_color', data)
+        self.assertTrue(data['content'].startswith('Mariana,'), f"Horóscopo deve começar com o nome: {data['content']}")
+
+    def test_user_tarot(self):
+        res = self.client.get('/user/tarot?name=Carlos&birth_date=1990-05-10&card_id=0')
+        self.assertEqual(res.status_code, 200)
+        data = json.loads(res.data)
+        self.assertEqual(data['card_name'], 'O Sol')
+        self.assertEqual(data['roman'], 'XIX')
+        self.assertTrue(data['content'].startswith('Carlos,'), f"Tarô deve começar com o nome: {data['content']}")
+
 if __name__ == '__main__':
     unittest.main()
+
