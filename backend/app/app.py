@@ -240,9 +240,7 @@ def update_user_profile():
     data = request.get_json(silent=True) or {}
     user_id = (data.get("user_id") or "default").strip()
     name = (data.get("name") or "Viajante").strip()
-    birth_date = (data.get("birth_date") or "1996-01-01").strip()
-    if len(birth_date) == 4 and birth_date.isdigit():
-        birth_date = f"{birth_date}-01-01"
+    birth_date = ai_engine.normalize_birth_date(data.get("birth_date") or "1996-01-01")
     city = (data.get("city") or "São Paulo").strip()
     state = (data.get("state") or "SP").strip()
 

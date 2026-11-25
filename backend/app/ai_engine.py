@@ -9,19 +9,44 @@ except ImportError:
     pass
 
 
+def parse_birth_date(birth_date_str):
+    """Faz o parse flexível de data de nascimento em formato brasileiro (DD/MM/AAAA), ISO (AAAA-MM-DD) ou apenas ano (AAAA)."""
+    if not birth_date_str:
+        return None
+    raw = str(birth_date_str).strip()
+    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%Y-%m-%d", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(raw[:10], fmt)
+        except Exception:
+            continue
+    if len(raw) == 4 and raw.isdigit():
+        try:
+            return datetime(int(raw), 1, 1)
+        except Exception:
+            return None
+    return None
+
+
+def normalize_birth_date(birth_date_str):
+    """Normaliza qualquer formato aceito de data para YYYY-MM-DD (compatível com PostgreSQL e SQLite)."""
+    dt = parse_birth_date(birth_date_str)
+    if dt:
+        return dt.strftime("%Y-%m-%d")
+    return str(birth_date_str or "").strip()
+
+
 def calculate_age(birth_date_str):
     if not birth_date_str:
         return 28
     try:
-        # Tenta formato YYYY-MM-DD
-        if len(str(birth_date_str)) >= 10:
-            birth_date = datetime.strptime(str(birth_date_str)[:10], "%Y-%m-%d")
+        raw = str(birth_date_str).strip()
+        if len(raw) == 4 and raw.isdigit():
+            age = datetime.today().year - int(raw)
+            return max(10, min(120, age))
+        birth_date = parse_birth_date(raw)
+        if birth_date:
             today = datetime.today()
             age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-            return max(10, min(120, age))
-        # Tenta apenas ano YYYY
-        elif len(str(birth_date_str)) == 4 and str(birth_date_str).isdigit():
-            age = datetime.today().year - int(birth_date_str)
             return max(10, min(120, age))
     except Exception:
         pass
@@ -228,11 +253,14 @@ ZODIAC_BY_ID = {s["id"]: s for s in ZODIAC_SIGNS}
 
 
 def get_zodiac_from_birth_date(birth_date_str):
-    """Calcula o signo solar a partir da data de nascimento (YYYY-MM-DD)."""
-    if not birth_date_str or len(str(birth_date_str).strip()) < 10:
+    """Calcula o signo solar a partir da data de nascimento (DD/MM/AAAA ou AAAA-MM-DD)."""
+    raw = str(birth_date_str or "").strip()
+    if not raw or (len(raw) == 4 and raw.isdigit()):
+        return None
+    dt = parse_birth_date(raw)
+    if not dt:
         return None
     try:
-        dt = datetime.strptime(str(birth_date_str).strip()[:10], "%Y-%m-%d")
         m, d = dt.month, dt.day
         if (m == 3 and d >= 21) or (m == 4 and d <= 19):
             return ZODIAC_BY_ID["aries"]
